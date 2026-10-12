@@ -88,7 +88,13 @@
   - [x] **O-04b** Lápiz para corregir lo elegido (placa y proveedor): campo de solo lectura con un lápiz de 44 px al costado; tocarlo reabre el selector; salir sin elegir conserva lo anterior; nada se manda al servidor
   - [ ] **E4-02:** mandar la placa y el proveedor elegidos al confirmar la salida (AC4: si no se elige, van como `null`)
   - [ ] Mirar el selector en iPhone y Android (360 px, teclado en pantalla) *(solo en teléfono)*
-- [ ] *(Could)* **O-05** Escanear el VIN con la cámara
+- [~] **O-05** Escanear el VIN con la cámara *(pedida por el usuario el 2026-10-12)* — hecha en código y con pruebas; **falta probarla con una etiqueta real en iPhone y Android**
+  - [x] Botón «Escanear» junto a «Filtrar por VIN»: abre un escáner a pantalla completa, lee QR y códigos de barras y escribe el VIN en el filtro sin consultar al servidor
+  - [x] Si el código trae más que el VIN (una dirección, un rótulo), se extrae el VIN; si no, el texto en mayúsculas, como la app móvil
+  - [x] Cierra la cámara al leer, al cerrar y al salir; Escape cierra y el foco vuelve al botón
+  - [x] La librería (`@zxing/browser`, la del portal) se carga solo al abrir el escáner
+  - [ ] Probar en iPhone y Android: QR de una etiqueta, código de barras Code 128/39, poca luz y distancia
+  - [ ] Confirmar con el usuario qué trae el código de las etiquetas reales (¿solo el VIN?)
 - [ ] *(Could)* **T11** Aviso de foto oscura o tapada
 - [~] **T12** Elegir una foto de la galería *(añadida el 2026-10-12, pedida por el usuario)* — hecha en código y con pruebas; **falta probarla en iPhone y Android**
   - [x] «Elegir de la galería» junto a «Tomar foto»; abre la galería del teléfono (sin `capture`) y funciona también si la cámara está denegada o no disponible
@@ -189,4 +195,5 @@
 - **2026-10-12** — Prueba real de E4-01: la foto se sube a `storage.googleapis.com` con 200 desde `localhost:5173` en Chrome y Edge; el PUT no lleva `Authorization` y hay un solo permiso y un solo PUT por foto. **Hallazgo:** el backend de desarrollo firma URLs del bucket **`sum-fotos-prod`**. Quedaron **5 objetos de prueba** en ese bucket (3 de depuración de la prueba y 2 de la corrida final), bajo `traslado/2026/10/`. No se pueden borrar desde la web. La orden usada se devolvió al pool.
 - **2026-10-12** — E4-02 hecha en código, sin la prueba real. 1362 pruebas de Vitest en 61 archivos. Se rompieron a propósito 27 comportamientos: 25 se detectaron y 2 no (confirmar una orden cuya toma se perdió, y borrar la toma al confirmar); para la primera se escribió la prueba y ahora se detecta; la segunda es redundante (la actualización de la lista ya reconcilia esa toma) y se dejó una prueba del resultado. **No se probó contra el backend real:** confirmar la salida cambia la orden a `en_transito` y marca la placa «en uso» en la base de desarrollo, y subir las fotos deja objetos en el bucket; falta que el usuario lo autorice.
 - **2026-10-12** — T12 (galería) hecha en código. 1375 pruebas de Vitest en 64 archivos. Se rompieron a propósito 23 comportamientos: 20 se detectaron a la primera y 3 no (bloqueo de «Tomar foto» mientras se prepara la foto, ocultar la guía sobre la foto elegida, y pedir la orientación EXIF al decodificar); se escribieron las pruebas y ahora se detectan las 23. Refactor: la codificación a JPEG verificado de `captureFrame` ahora la comparten la cámara y la galería. Falta probarla en un teléfono.
+- **2026-10-12** — O-05 (escáner de VIN por QR y código de barras) hecha en código. 1443 pruebas de Vitest en 67 archivos. Se rompieron a propósito 25 comportamientos: 23 se detectaron a la primera y 2 no (un VIN con `O` seguido de uno válido, y cerrar el escáner antes de que cargue el lector); se escribieron las pruebas y ahora se detectan los 25. La librería de lectura queda en un fragmento aparte (~480 kB) que solo se descarga al abrir el escáner. Falta probar con etiquetas reales en un teléfono.
 - **Siguiente:** E4-01 (subida de fotos) y E4-02 (confirmar salida y entrega), luego P-01. Conviene antes que el backend corrija la cookie, y que se prueben los teléfonos (ver la lista de verificación manual).

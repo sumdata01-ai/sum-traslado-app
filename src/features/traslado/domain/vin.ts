@@ -16,6 +16,20 @@ export const normalizarVin = (texto: string): string => texto.replace(/\s+/g, ''
 
 export const esVinCompleto = (texto: string): boolean => VIN_COMPLETO.test(normalizarVin(texto))
 
+// Un VIN completo suelto dentro de un texto: no pegado a otras letras o números (un tramo de 20 no cuenta).
+const VIN_DENTRO_DE_UN_TEXTO = /(?:^|[^A-Z0-9])([A-HJ-NPR-Z0-9]{17})(?![A-Z0-9])/
+
+/**
+ * Lo que se lee de un QR o código de barras, convertido en lo que se pone en el filtro (O-05).
+ * La etiqueta suele traer el VIN solo, pero un QR puede traer más (`https://…/LSCA…`, `VIN: LSCA…`):
+ * si hay un VIN completo suelto en el texto, es ese; si no, el texto tal cual, en mayúsculas y sin
+ * espacios, que es lo que hace la app móvil.
+ */
+export function extraerVin(texto: string): string {
+  const mayusculas = texto.trim().toUpperCase()
+  return mayusculas.match(VIN_DENTRO_DE_UN_TEXTO)?.[1] ?? normalizarVin(mayusculas)
+}
+
 /**
  * Qué se hace con lo escrito al «buscar en el sistema»:
  * - `corto`: menos de 4 caracteres; **no se llama al servidor** (el endpoint lo rechazaría).

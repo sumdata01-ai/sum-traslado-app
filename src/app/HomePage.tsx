@@ -6,6 +6,7 @@ import type { FotoStorePort } from '@/features/traslado/data/fotoStorePort'
 import type { SubidaFotos } from '@/features/traslado/data/subidaFotos'
 import type { Momento } from '@/features/traslado/domain'
 import { BuscarEnElSistema } from '@/features/traslado/components/BuscarEnElSistema'
+import { EscanerVin, type EscanerVinProps } from '@/features/traslado/components/EscanerVin'
 import { TarjetaOrden, type TarjetaOrdenProps } from '@/features/traslado/components/TarjetaOrden'
 import { useCatalogoTraslado } from '@/features/traslado/components/useCatalogoTraslado'
 import { useListaOrdenes } from '@/features/traslado/components/useListaOrdenes'
@@ -26,6 +27,8 @@ export interface HomePageProps {
   identificador: IdentificadorVin
   /** Las fotos y su subida (E4-01). Sin esto la home no ofrece fotografiar. */
   fotos?: { store: FotoStorePort; subidas: SubidaFotos; confirmacion: ConfirmacionTraslado }
+  /** Solo para sustituir la cámara y el lector del escáner de VIN en las pruebas. */
+  escaner?: Pick<EscanerVinProps, 'crearSesion' | 'cargarDecodificador' | 'crearLienzo'>
   onCerrarSesion: () => void
 }
 
@@ -36,13 +39,14 @@ export interface HomePageProps {
  * orden del pool («Comenzar despacho») y se suelta una propia (O-02). Si el filtro no encuentra un VIN
  * en el teléfono, se puede buscar en el sistema (O-03).
  */
-export function HomePage({ sesion, lista, catalogo, identificador, fotos, onCerrarSesion }: HomePageProps) {
+export function HomePage({ sesion, lista, catalogo, identificador, fotos, escaner, onCerrarSesion }: HomePageProps) {
   const instantanea = useListaOrdenes(lista, sesion.idUsuario)
   const opciones = useCatalogoTraslado(catalogo)
   const [filtro, setFiltro] = useState('')
   const [mensaje, setMensaje] = useState<{ tono: TonoBanner; texto: string } | null>(null)
   const [ocupadas, setOcupadas] = useState<ReadonlySet<number>>(new Set())
   const busqueda = useSyncExternalStore(identificador.suscribir, identificador.getSnapshot)
+  const [escaneando, setEscaneando] = useState(false)
   const [capturando, setCapturando] = useState<{ idOrden: number; vin: string; momento: Momento } | null>(null)
 
   // Lo que se buscó en el sistema vale para el texto que se escribió: si el filtro cambia, o se sale de la
@@ -189,17 +193,23 @@ export function HomePage({ sesion, lista, catalogo, identificador, fotos, onCerr
         </p>
       ) : (
         <>
-          <div className="mb-4">
-            <TextField
-              etiqueta="Filtrar por VIN"
-              type="search"
-              value={filtro}
-              onChange={(evento) => setFiltro(evento.target.value)}
-              autoComplete="off"
-              autoCapitalize="characters"
-              autoCorrect="off"
-              spellCheck={false}
-            />
+          <div className="mb-4 flex items-end gap-2">
+            <div className="min-w-0 flex-1">
+              <TextField
+                etiqueta="Filtrar por VIN"
+                type="search"
+                value={filtro}
+                onChange={(evento) => setFiltro(evento.target.value)}
+                autoComplete="off"
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+            </div>
+            {/* O-05: el VIN leído de un QR o código de barras se escribe en el filtro; no consulta al servidor. */}
+            <Button variante="secundario" aria-label="Escanear VIN con la cámara" onClick={() => setEscaneando(true)}>
+              Escanear
+            </Button>
           </div>
 
           {hayFiltro && misFiltradas.length === 0 && poolFiltrado.length === 0 && (
@@ -220,6 +230,17 @@ export function HomePage({ sesion, lista, catalogo, identificador, fotos, onCerr
       )}
 
       {herramientasVisibles() && <HerramientasDePrueba />}
+
+      {escaneando && (
+        <EscanerVin
+          {...escaner}
+          onCerrar={() => setEscaneando(false)}
+          onDetectado={(vin) => {
+            setFiltro(vin)
+            setEscaneando(false)
+          }}
+        />
+      )}
     </main>
   )
 }

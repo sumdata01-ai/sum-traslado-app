@@ -276,10 +276,14 @@ Como operario, quiero un lápiz junto a la placa y al proveedor que ya elegí, p
 - **Pruebas:** [C] modos del campo, lápiz, salir sin elegir, conservar lo anterior, foco, accesibilidad. [C] en la home: corregir la placa y el proveedor por separado y que no se llame al servidor. [E] en Chrome y Edge: elegir, tocar el lápiz y cambiar por otra tres veces sin peticiones al servidor. [M] en un teléfono: que el toque en el lápiz sea cómodo con una mano y el teclado no tape la lista.
 - **Could (no entra sin pedirlo):** «quitar la elección» para dejar el campo vacío.
 
-### O-05 Escanear el VIN con la cámara · Tamaño M · *Could*
+### O-05 Escanear el VIN con la cámara · Tamaño M · *Could→Should (pedida por el usuario el 2026-10-12)*
 - **AC1.** Given el escaneo, When detecta un VIN, Then llena el filtro y no consulta al servidor.
-- **AC2.** Given una sesión de captura abierta, When abro el escáner, Then se libera primero el stream anterior (una sola cámara a la vez).
-- **Pruebas:** [C] escaneo simulado. [U] no hay dos streams activos. [M] escanear un VIN real en iPhone.
+- **AC2.** Given una sesión de captura abierta, When abro el escáner, Then se libera primero el stream anterior (una sola cámara a la vez). *Hoy se cumple por construcción: el escáner solo existe en la home y la captura la reemplaza; al cerrar el escáner se suelta la cámara.*
+- **AC3.** Lee **QR y códigos de barras** (Code 128, Code 39, Data Matrix), como la app móvil. Lo leído es texto: si trae un VIN completo suelto (por ejemplo dentro de una dirección o con rótulo) se usa ese; si no, el texto en mayúsculas y sin espacios.
+- **AC4.** Given que la cámara está denegada o no disponible, When abro el escáner, Then veo el motivo y cómo arreglarlo, y puedo cerrar. Escape cierra; el foco vuelve al botón.
+- **Librería:** `@zxing/browser` (la misma que el portal), cargada **solo al abrir el escáner** (no pesa en la carga de la home).
+- **Pruebas:** [U] extracción del VIN, lector cuadro a cuadro, decodificador. [C] diálogo y home. [M] escanear una etiqueta real en iPhone y Android.
+**Estado (2026-10-12):** hecha en código; falta [M].
 
 ---
 
