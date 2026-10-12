@@ -1,0 +1,22 @@
+node_modules
+dist
+coverage
+playwright-report
+test-results
+*.tsbuildinfo
+*.log
+
+# Certificados locales de mkcert: nunca se versionan
+.certs/
+
+# Configuración local
+.env
+.env.*
+!.env.example
+*.local
+
+.claude/
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
