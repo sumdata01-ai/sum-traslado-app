@@ -43,7 +43,14 @@ export interface FotoCapturada {
   creadaEn: number
 }
 
-export type CodigoCaptura = 'VIDEO_NO_LISTO' | 'BLOB_VACIO' | 'FORMATO_INCORRECTO' | 'MEMORIA_AGOTADA' | 'CAPTURA_FALLIDA' | 'INTERRUMPIDA'
+export type CodigoCaptura =
+  | 'VIDEO_NO_LISTO'
+  | 'BLOB_VACIO'
+  | 'FORMATO_INCORRECTO'
+  | 'MEMORIA_AGOTADA'
+  | 'CAPTURA_FALLIDA'
+  | 'INTERRUMPIDA'
+  | 'ARCHIVO_INVALIDO'
 
 const MENSAJES: Record<CodigoCaptura, string> = {
   VIDEO_NO_LISTO: 'La cámara todavía no está lista. Espera un momento y vuelve a intentar.',
@@ -52,6 +59,7 @@ const MENSAJES: Record<CodigoCaptura, string> = {
   MEMORIA_AGOTADA: 'No hay memoria suficiente para tomar la foto. Cierra otras pestañas o aplicaciones y vuelve a intentar.',
   CAPTURA_FALLIDA: 'No se pudo tomar la foto. Vuelve a intentar.',
   INTERRUMPIDA: 'La foto se interrumpió porque la cámara se pausó. Vuelve a tomarla.',
+  ARCHIVO_INVALIDO: 'No se pudo usar ese archivo. Elige una foto (JPEG, PNG o HEIC) de la galería.',
 }
 
 /** Todos los fallos de captura se pueden reintentar tomando la foto otra vez. */
@@ -104,8 +112,16 @@ function aBlob(lienzo: LienzoLike, calidad: number, tiempoMaximoMs: number): Pro
 
 export async function capturarFrame(video: FrameFuente, opciones: OpcionesCaptura = {}): Promise<ResultadoCaptura> {
   if (!(video.videoWidth > 0 && video.videoHeight > 0)) return fallo('VIDEO_NO_LISTO')
+  return codificarJpeg(video, video.videoWidth, video.videoHeight, opciones)
+}
 
-  const { ancho, alto } = calcularDimensiones(video.videoWidth, video.videoHeight, opciones.ladoLargoMaximo ?? LADO_LARGO_MAXIMO_PX)
+/**
+ * Dibuja `fuente` (un frame de video o una imagen ya decodificada) en un lienzo del tamaño final y la
+ * entrega como JPEG **verificado**. Es lo que comparten la cámara y la galería: una foto, venga de donde
+ * venga, se acepta solo si se comprobó. El lienzo siempre se libera.
+ */
+export async function codificarJpeg(fuente: unknown, anchoOrigen: number, altoOrigen: number, opciones: OpcionesCaptura = {}): Promise<ResultadoCaptura> {
+  const { ancho, alto } = calcularDimensiones(anchoOrigen, altoOrigen, opciones.ladoLargoMaximo ?? LADO_LARGO_MAXIMO_PX)
   const lienzo = (opciones.crearLienzo ?? (() => document.createElement('canvas') as unknown as LienzoLike))()
 
   try {
@@ -115,7 +131,7 @@ export async function capturarFrame(video: FrameFuente, opciones: OpcionesCaptur
     // Un lienzo sin contexto casi siempre es falta de memoria (límite de área en iOS). Es una inferencia.
     if (!contexto) return fallo('MEMORIA_AGOTADA')
 
-    contexto.drawImage(video, 0, 0, ancho, alto)
+    contexto.drawImage(fuente, 0, 0, ancho, alto)
     const blob = await aBlob(lienzo, opciones.calidad ?? CALIDAD_JPEG, opciones.tiempoMaximoMs ?? TIEMPO_CAPTURA_MS)
 
     if (!blob || blob.size === 0) return fallo('BLOB_VACIO')

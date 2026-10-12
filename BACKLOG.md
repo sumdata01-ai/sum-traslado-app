@@ -318,6 +318,19 @@ Como operario, quiero confirmar el despacho cuando las fotos estén arriba, para
 
 **Estado (2026-10-12):** hecha en código; AC1 a AC7 cubiertos por pruebas con un servidor falso. Falta la prueba contra el backend de desarrollo (cambia la orden a `en_transito`). Detalle en `TODO.md`.
 
+### T12 Elegir una foto de la galería · Tamaño M · *Could→Should (pedida por el usuario el 2026-10-12)*
+Como operario, quiero elegir una foto que ya tengo en el teléfono, para completar una zona cuando no puedo usar la cámara de la página.
+- **AC1.** Given el formulario de captura, When lo abro, Then veo «Elegir de la galería» junto a «Tomar foto», y se bloquea cuando ya no hay zona por fotografiar.
+- **AC2.** Given que elijo un archivo, When es una imagen, Then se convierte a JPEG (lado largo máximo 1920 px, orientación corregida, sin metadatos) y queda en revisión con «Usar» y «Descartar».
+- **AC3.** Given la foto en revisión, When pulso «Usar», Then se guarda en la zona que estaba activa al elegirla y se sube igual que una foto de la cámara; «Descartar» no guarda nada.
+- **AC4.** Given que elijo algo que no es una foto, está vacío o no se puede leer, When ocurre, Then veo el motivo y puedo elegir otra.
+- **AC5.** Given que la cámara está denegada o no disponible, When quiero fotografiar, Then la galería funciona igual.
+- **AC6.** Given una foto de la galería, When se registra su fecha, Then es la de modificación del archivo (cuándo se tomó); si falta o es futura, la de ahora.
+- **AC7.** Given una foto en revisión o procesándose, When intento cambiar de zona o tomar otra, Then está bloqueado.
+- **Decisiones abiertas:** marcar en el servidor las fotos de galería (campo `comentario` de cada foto al confirmar); que el supervisor sepa cuáles no se tomaron en el momento.
+- **Pruebas:** [U] conversión (tipos, fecha, memoria, orientación). [C] widget y formulario. [M] iPhone y Android con HEIC y fotos grandes.
+**Estado (2026-10-12):** hecha en código; falta [M].
+
 ### E4-03 Drenador con candado entre pestañas · Tamaño L · *Should · Depende de E4-02*
 Como operario, quiero que lo pendiente se envíe solo cuando vuelva la señal, para no tener que acordarme.
 

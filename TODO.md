@@ -16,21 +16,21 @@
 - [x] **A-01** Cliente HTTP (401 → renovar y reintentar, 403, tiempo límite)
 
 ## Sprint 1 — Cámara
-- [ ] **S-01** Spike: ¿Safari reabre la cámara sin un toque al volver de segundo plano? *(solo en iPhone)*
+- [x] **S-01** Spike: ¿Safari reabre la cámara sin un toque al volver de segundo plano? — **Sí**: el usuario lo probó el 2026-10-12 en iPhone (iOS 26.5, Safari, desde Vercel): al bloquear la pantalla o cambiar de app, la cámara **vuelve sola**. Falta repetirlo en Android
 - [~] **T1** Soporte y errores de la cámara — falta probar los textos de permisos en iPhone y Android
-- [~] **T2** Sesión de cámara con máquina de estados — falta bloquear pantalla, llamada y cambio de app en dispositivo
+- [~] **T2** Sesión de cámara con máquina de estados — iPhone: bloquear pantalla y cambiar de app confirmado (2026-10-12). Falta la llamada entrante en iPhone y todo en Android
 - [~] **T3** Capturar un frame JPEG verificado — falta comprobar en dispositivo que el archivo es JPEG
 - [~] **T5** Vista previa «Usar / Repetir», contador y fichas por zona — falta mirarla en un teléfono
 
 ## Sprint 2 — Guardado y login
-- [~] **T4a** Guardar la foto en Dexie con verificación — **falta confirmar en iPhone y Android que las fotos sobreviven a recargar** (riesgo R2)
+- [~] **T4a** Guardar la foto en Dexie con verificación — **iPhone (iOS 26.5, Safari, desde Vercel): confirmado el 2026-10-12** que la foto se guarda y **sobrevive a cerrar sesión y a cerrar la app**. Falta Android y probar la recarga con la pestaña abierta (riesgo R2)
 - [~] **T4b** Reconciliar al abrir — misma comprobación en dispositivo
-- [!] **A-02** Login y sesión (opción A: cookie) — **hecha en código; en un navegador real la recarga pierde la sesión por la cookie del backend de desarrollo**
+- [x] **A-02** Login y sesión (opción A: cookie) — hecha; la recarga mantiene la sesión en el iPhone desde Vercel (producción). **Solo en local, contra el backend de desarrollo, la cookie sigue sin guardarse en Chrome y Edge**
   - [x] Protocolo comprobado contra el backend de desarrollo (login fallido = HTTP 200 con `success:false`; el refresh rota la cookie y rechaza la anterior; el refresh no trae el `username`)
   - [x] Módulo de sesión: token solo en memoria, refresh con un solo vuelo y candado entre pestañas, sin cerrar sesión por falta de red, logout pendiente recordado
   - [x] Pantallas: login, sin acceso, sin conexión, comprobando sesión
   - [x] AC1 login válido · [x] AC2 credenciales inválidas · [x] AC3 sin `traslado` · [x] AC5 logout · [x] AC6 sin bucle
-  - [!] AC4 recarga restaura la sesión — **funciona con el servidor falso y con el protocolo real, pero Chrome y Edge no guardan la cookie** que emite hoy el backend de desarrollo
+  - [x] AC4 recarga restaura la sesión — **confirmado por el usuario el 2026-10-12 en el iPhone, desde Vercel (backend de producción, mismo origen): la sesión se mantiene al recargar.** Sigue fallando solo contra el backend de DESARROLLO (`:8050`), cuya cookie Chrome y Edge no guardan (ver «Pedidos a terceros»)
   - [x] 9 pruebas contra el backend real (base de desarrollo), que se omiten solas sin credenciales o sin backend
   - [x] Prueba en Chrome y Edge reales (Playwright): **hallazgo confirmado**, ver «Pedidos a terceros»
   - [ ] Quitar la marca de «fallo esperado» de `e2e/login.spec.ts` cuando el backend corrija la cookie
@@ -90,6 +90,14 @@
   - [ ] Mirar el selector en iPhone y Android (360 px, teclado en pantalla) *(solo en teléfono)*
 - [ ] *(Could)* **O-05** Escanear el VIN con la cámara
 - [ ] *(Could)* **T11** Aviso de foto oscura o tapada
+- [~] **T12** Elegir una foto de la galería *(añadida el 2026-10-12, pedida por el usuario)* — hecha en código y con pruebas; **falta probarla en iPhone y Android**
+  - [x] «Elegir de la galería» junto a «Tomar foto»; abre la galería del teléfono (sin `capture`) y funciona también si la cámara está denegada o no disponible
+  - [x] La foto se decodifica respetando la orientación EXIF, se reduce a 1920 px de lado largo y se **vuelve a codificar como JPEG verificado** (HEIC y PNG incluidos); la foto queda sin metadatos, también sin ubicación
+  - [x] Pasa por la misma revisión «Usar / Descartar», se guarda en la zona activa y se sube sola como cualquier otra
+  - [x] Su fecha es la de modificación del archivo (cuándo se tomó); si falta o es futura, la de ahora
+  - [x] Archivos que no son fotos, vacíos o ilegibles: mensaje claro y se puede volver a elegir
+  - [ ] Probar en iPhone (iOS 26.5): foto HEIC, foto grande de 12 MP o más, y que la orientación salga derecha
+  - [ ] Decidir si las fotos de galería se marcan en el servidor (`comentario` de la foto al confirmar), para que el supervisor sepa cuáles no se tomaron en el momento
 
 ## Sprint 4 — Envío
 - [x] **E4-01** Cada foto se sube a GCS al tomarla, con «Reintentar» por foto — hecha y probada contra el bucket real desde `localhost:5173` (Chrome y Edge)
@@ -128,9 +136,9 @@
 
 ## Despliegue en Vercel (decidido el 2026-10-12)
 - [x] `vercel.json` creado: build de Vite, `/api/*` y `/mobile/*` reenviados al Cloud Run de producción, `index.html` para el resto, `noindex`.
-- [ ] **El usuario** crea el proyecto en Vercel con su cuenta y lo despliega; no se hizo desde aquí.
+- [x] Desplegado en Vercel el 2026-10-12 desde `sumdata01-ai/sum-traslado-app`: **https://sum-traslado-app.vercel.app/** (comprobado: carga con 200, `noindex` aplicado y las rutas del SPA responden; no se probó nada contra el backend).
 - [ ] Decisión: el front desplegado apunta a **producción** y se usa **solo para ver las pantallas** (no tomar órdenes, no subir fotos, no confirmar).
-- [ ] Si se quiere subir fotos desde esa URL: agregar `https://<proyecto>.vercel.app` al CORS del bucket (D3). Subir y confirmar escribirían en producción: contradice la regla de abajo, hay que decidirlo aparte.
+- [ ] Si se quiere subir fotos desde esa URL: agregar `https://sum-traslado-app.vercel.app` al CORS del bucket (D3). Subir y confirmar escribirían en producción: contradice la regla de abajo, hay que decidirlo aparte.
 - [ ] Sigue pendiente el guard para que las pruebas automáticas se nieguen a correr contra backends que no sean locales.
 
 ## Regla de producción (decidida por el usuario el 2026-10-12)
@@ -157,9 +165,9 @@
 - [ ] Backend: qué roles tienen hoy los usuarios con `traslado` (¿existe alguno fuera de `admin`, `supervisor`, `operario`?)
 
 ## Verificación manual pendiente en teléfonos (iPhone y Android, con `npm run dev:https`)
-- [ ] Spike S-01: bloquear pantalla ~10 s y cambiar de app; ver si la cámara vuelve sola o pide un toque
+- [x] Spike S-01 en iPhone: la cámara vuelve sola (2026-10-12). [ ] Falta Android
 - [ ] Tomar una foto y comprobar que el archivo es JPEG (la pantalla de prueba muestra tamaño, peso y tipo)
-- [ ] **Recargar la página y cerrar la pestaña desde el selector de apps: las fotos tienen que seguir ahí**
+- [x] iPhone: cerrar sesión y cerrar la app → las fotos siguen ahí (2026-10-12). [ ] Falta: recargar la página con la sesión abierta, y Android
 - [ ] Que el formulario y la home no desborden a 360 px y que la guía de cada zona se entienda
 - [ ] Textos de permisos de cámara denegado en iPhone y Android
 
@@ -180,4 +188,5 @@
 - **2026-10-12** — E4-01 hecha en código, sin la prueba real contra el bucket. 1281 pruebas de Vitest en 59 archivos. La subida es de un solo intento y «Reintentar» por foto (decisión del usuario: la web es con internet). Se rompieron a propósito 5 comportamientos de la pantalla: 4 se detectaron y 1 no (conectar el subidor a la pantalla de captura); se añadió la prueba. **Sin prueba:** que no se ofrezca fotografiar una orden con la toma perdida. **Pendiente de decidir por el usuario antes de la prueba real:** subir una foto de prueba al bucket de desarrollo y el CORS de `localhost:5173` (no verificado).
 - **2026-10-12** — Prueba real de E4-01: la foto se sube a `storage.googleapis.com` con 200 desde `localhost:5173` en Chrome y Edge; el PUT no lleva `Authorization` y hay un solo permiso y un solo PUT por foto. **Hallazgo:** el backend de desarrollo firma URLs del bucket **`sum-fotos-prod`**. Quedaron **5 objetos de prueba** en ese bucket (3 de depuración de la prueba y 2 de la corrida final), bajo `traslado/2026/10/`. No se pueden borrar desde la web. La orden usada se devolvió al pool.
 - **2026-10-12** — E4-02 hecha en código, sin la prueba real. 1362 pruebas de Vitest en 61 archivos. Se rompieron a propósito 27 comportamientos: 25 se detectaron y 2 no (confirmar una orden cuya toma se perdió, y borrar la toma al confirmar); para la primera se escribió la prueba y ahora se detecta; la segunda es redundante (la actualización de la lista ya reconcilia esa toma) y se dejó una prueba del resultado. **No se probó contra el backend real:** confirmar la salida cambia la orden a `en_transito` y marca la placa «en uso» en la base de desarrollo, y subir las fotos deja objetos en el bucket; falta que el usuario lo autorice.
+- **2026-10-12** — T12 (galería) hecha en código. 1375 pruebas de Vitest en 64 archivos. Se rompieron a propósito 23 comportamientos: 20 se detectaron a la primera y 3 no (bloqueo de «Tomar foto» mientras se prepara la foto, ocultar la guía sobre la foto elegida, y pedir la orientación EXIF al decodificar); se escribieron las pruebas y ahora se detectan las 23. Refactor: la codificación a JPEG verificado de `captureFrame` ahora la comparten la cámara y la galería. Falta probarla en un teléfono.
 - **Siguiente:** E4-01 (subida de fotos) y E4-02 (confirmar salida y entrega), luego P-01. Conviene antes que el backend corrija la cookie, y que se prueben los teléfonos (ver la lista de verificación manual).

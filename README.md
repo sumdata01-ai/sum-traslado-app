@@ -65,7 +65,7 @@ Sin `.certs/`, Vite genera uno autofirmado (`@vitejs/plugin-basic-ssl`). Sirve p
 **Ojo: apunta al Cloud Run de PRODUCCIÓN** (`sum-backend-secado-gnsgzjfoqa-uc.a.run.app`). Todo lo que se haga ahí (iniciar sesión, tomar una orden, subir una foto, confirmar) es real. Se decidió usarlo **solo para ver las pantallas**; las pruebas del flujo se hacen en local.
 
 1. En Vercel: *Add New › Project*, importar el repositorio. Framework «Vite»; no hacen falta variables de entorno.
-2. Cada despliegue tiene una URL `https://<proyecto>.vercel.app` con HTTPS válido: sirve para abrirlo en el teléfono sin instalar certificados.
+2. Despliegue actual: **https://sum-traslado-app.vercel.app/**. Cada despliegue tiene una URL `https://<proyecto>.vercel.app` con HTTPS válido: sirve para abrirlo en el teléfono sin instalar certificados.
 3. Para que el navegador pueda **subir fotos** al bucket, esa URL tendría que agregarse al CORS del bucket (pendiente D3, de quien administra GCP). Hoy no está.
 
 ## Estructura

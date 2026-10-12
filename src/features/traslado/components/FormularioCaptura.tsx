@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { type EstadoAlmacenamiento, consultarAlmacenamiento } from '@/core/storage/persistencia'
 import { Banner, SectionHeader } from '@/core/ui'
-import { CameraSession, CameraWidget, type FotoCapturada, useCameraSession } from '../camera'
+import { CameraSession, CameraWidget, type FotoCapturada, type ResultadoCaptura, useCameraSession } from '../camera'
 import type { FotoStorePort } from '../data/fotoStorePort'
 import type { SubidaFotos } from '../data/subidaFotos'
 import type { Momento, Zona } from '../domain'
@@ -20,6 +20,8 @@ export interface FormularioCapturaProps {
   /** Solo para sustituir la sesión en las pruebas. Se ignora si llega `sesion`. */
   crearSesion?: () => CameraSession
   onCapturada?: (foto: FotoCapturada) => void
+  /** Solo para sustituir la conversión de la foto elegida de la galería en las pruebas. */
+  convertirArchivo?: (archivo: File) => Promise<ResultadoCaptura>
   /** Lo que va al pie, bajo las zonas (por ejemplo, «Confirmar salida»). Recibe cómo van las fotos. */
   pie?: (estado: { tomadas: number; total: number; fallidas: number; todasSubidas: boolean }) => ReactNode
   /**
@@ -47,6 +49,7 @@ export function FormularioCaptura({
   sesion: sesionRecibida,
   crearSesion,
   onCapturada,
+  convertirArchivo,
   pie,
   comprobarAlmacenamiento,
 }: FormularioCapturaProps) {
@@ -70,7 +73,8 @@ export function FormularioCaptura({
   }, [consultar])
 
   const zonaDeLaFoto = useRef<Zona | null>(null)
-  const fichasBloqueadas = estado === 'capturando' || estado === 'revisando'
+  const [galeriaOcupada, setGaleriaOcupada] = useState(false)
+  const fichasBloqueadas = estado === 'capturando' || estado === 'revisando' || galeriaOcupada
   const vistaDeLaActiva = zonas.find((z) => z.zona === zonaActiva)
 
   return (
@@ -110,6 +114,9 @@ export function FormularioCaptura({
         sesion={sesion}
         guia={vistaDeLaActiva ? { etiqueta: vistaDeLaActiva.etiqueta } : undefined}
         disparoDeshabilitado={zonaActiva === null}
+        permitirGaleria
+        convertirArchivo={convertirArchivo}
+        onGaleriaOcupada={setGaleriaOcupada}
         onCapturada={(foto) => {
           zonaDeLaFoto.current = zonaActiva
           onCapturada?.(foto)
