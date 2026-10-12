@@ -68,6 +68,10 @@ Sin `.certs/`, Vite genera uno autofirmado (`@vitejs/plugin-basic-ssl`). Sirve p
 2. Despliegue actual: **https://sum-traslado-app.vercel.app/**. Cada despliegue tiene una URL `https://<proyecto>.vercel.app` con HTTPS válido: sirve para abrirlo en el teléfono sin instalar certificados.
 3. Para que el navegador pueda **subir fotos** al bucket, esa URL tendría que agregarse al CORS del bucket (pendiente D3, de quien administra GCP). Hoy no está.
 
+## Herramientas de prueba (ocultas)
+
+La home no muestra «Herramientas de prueba». Para verlas, abre la página con `?herramientas` al final de la dirección (por ejemplo `https://sum-traslado-app.vercel.app/?herramientas`, o `https://192.168.1.54:5173/?herramientas` en local). Traen la comprobación de HTTPS y cámara y «Probar la cámara», que solo guarda en el teléfono y **no sube nada**: es la forma segura de probar la cámara y la galería contra la versión desplegada, que apunta a producción.
+
 ## Estructura
 
 ```

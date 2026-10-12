@@ -1,13 +1,14 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { StrictMode } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { axe } from 'vitest-axe'
 import type { Sesion } from '@/core/auth'
 import { ApiError } from '@/core/http/ApiError'
 import type { ResultadoMisOrdenes } from '@/features/traslado/api/trasladoApi'
 import { crearCatalogoDePrueba, crearIdentificadorDePrueba, crearListaDePrueba, ordenCacheada, ordenRemota, sinFotos } from '@/features/traslado/data/testing/fakes'
 import type { OrdenRemota } from '@/features/traslado/domain'
+import { herramientasVisibles } from './HerramientasDePrueba'
 import { HomePage } from './HomePage'
 
 const sesion: Sesion = { idUsuario: 7, usuario: 'usuario.prueba', nombre: 'OPERARIO PRUEBA', role: 'operario', area: 'secado', allowedApps: ['traslado'] }
@@ -340,10 +341,49 @@ function fijarContextoSeguro(valor: boolean) {
   Object.defineProperty(window, 'isSecureContext', { value: valor, configurable: true })
 }
 
-describe('herramientas de prueba', () => {
-  afterEach(() => fijarContextoSeguro(true))
+function fijarDireccion(busqueda: string) {
+  window.history.replaceState({}, '', `/${busqueda}`)
+}
 
-  it('siguen disponibles al pie, plegadas, y no abren la cámara al cargar', async () => {
+describe('herramientas de prueba: ocultas por defecto', () => {
+  afterEach(() => fijarDireccion(''))
+
+  it('la home normal no las muestra', async () => {
+    montar(respuestaCon([]))
+    await screen.findByText('No hay traslados disponibles hoy.')
+    expect(screen.queryByText('Herramientas de prueba')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Probar la cámara' })).not.toBeInTheDocument()
+  })
+
+  it('tampoco con otros parámetros en la dirección', async () => {
+    fijarDireccion('?filtro=vin&herramientasx=1')
+    montar(respuestaCon([]))
+    await screen.findByText('No hay traslados disponibles hoy.')
+    expect(screen.queryByText('Herramientas de prueba')).not.toBeInTheDocument()
+  })
+
+  it.each(['?herramientas', '?herramientas=1', '?a=1&herramientas'])('con «%s» en la dirección sí aparecen', async (busqueda) => {
+    fijarDireccion(busqueda)
+    montar(respuestaCon([]))
+    await screen.findByText('No hay traslados disponibles hoy.')
+    expect(screen.getByText('Herramientas de prueba')).toBeInTheDocument()
+  })
+
+  it('herramientasVisibles lee la búsqueda que se le pasa', () => {
+    expect(herramientasVisibles('')).toBe(false)
+    expect(herramientasVisibles('?herramientas')).toBe(true)
+    expect(herramientasVisibles('?x=1')).toBe(false)
+  })
+})
+
+describe('herramientas de prueba', () => {
+  beforeEach(() => fijarDireccion('?herramientas'))
+  afterEach(() => {
+    fijarContextoSeguro(true)
+    fijarDireccion('')
+  })
+
+  it('con ?herramientas están al pie, plegadas, y no abren la cámara al cargar', async () => {
     fijarContextoSeguro(true)
     montar(respuestaCon([]))
     await screen.findByText('No hay traslados disponibles hoy.')

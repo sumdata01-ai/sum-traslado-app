@@ -14,7 +14,7 @@ import type { IdentificadorVin, OrdenEncontrada } from '@/features/traslado/data
 import type { ListaOrdenes, ResultadoAccion, VistaOrden } from '@/features/traslado/data/listaOrdenes'
 import { filtrarPorVin, normalizarFiltro, valeMostrarAvance } from '@/features/traslado/domain'
 import { CapturaPage } from './CapturaPage'
-import { HerramientasDePrueba } from './HerramientasDePrueba'
+import { HerramientasDePrueba, herramientasVisibles } from './HerramientasDePrueba'
 import { SinPermisoPage } from './SinPermisoPage'
 
 export interface HomePageProps {
@@ -219,7 +219,7 @@ export function HomePage({ sesion, lista, catalogo, identificador, fotos, onCerr
         </>
       )}
 
-      <HerramientasDePrueba />
+      {herramientasVisibles() && <HerramientasDePrueba />}
     </main>
   )
 }

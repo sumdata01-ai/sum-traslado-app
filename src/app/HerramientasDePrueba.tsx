@@ -3,6 +3,15 @@ import { Button } from '@/core/ui'
 import { PruebaCamara } from './PruebaCamara'
 
 /**
+ * Las herramientas están **ocultas** salvo que la dirección lleve `?herramientas` (por ejemplo
+ * `https://…/?herramientas`). Así no aparecen en la home de los operarios y siguen a mano para probar la
+ * cámara en un teléfono.
+ */
+export function herramientasVisibles(busqueda: string = window.location.search): boolean {
+  return new URLSearchParams(busqueda).has('herramientas')
+}
+
+/**
  * Herramientas PROVISIONALES al pie de la home: comprueban, desde un teléfono, que la página llegó
  * por HTTPS, que el navegador ofrece cámara y permiten probar el formulario de captura. Se retiran
  * cuando exista el flujo real de salida y entrega (E4).

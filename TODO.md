@@ -149,7 +149,7 @@
 - Lo ya hecho: 5 fotos de prueba (~20 KB cada una) quedaron en `sum-fotos-prod`, bajo `traslado/2026/10/`. **Decisión del usuario: se dejan así**; no se pide borrarlas.
 
 ## Pendientes por decidir (el usuario)
-- [x] **Decidido (2026-10-12):** las herramientas de prueba provisionales («Probar la cámara») se dejan hasta que el usuario termine S-01 y la comprobación de JPEG en iPhone y Android; entonces se retiran.
+- [x] **Decidido (2026-10-12):** las herramientas de prueba provisionales («Probar la cámara») quedan **ocultas** en la home. Se muestran solo si la dirección lleva `?herramientas` (p. ej. `https://sum-traslado-app.vercel.app/?herramientas`). Se retiran del todo cuando el usuario termine las pruebas de teléfono (JPEG y Android).
 - [x] **Decidido (2026-10-12):** «tomar sin señal» se deja como está (opción A).
 - [x] **Decidido (2026-10-12):** la búsqueda parcial de VIN se deja como está.
 - [ ] ¿Se anotan los hallazgos de la revisión sobre el backend en «Pedidos a terceros»? (`confirmar-entrega` no comprueba quién entrega, responde «confirmada» al que pierde la salida, sin bloqueo entre dos confirmaciones simultáneas)
