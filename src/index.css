@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /*
- * Tokens de la app (Material 3, tema claro). Fuente: patron-traslado-web.md §5
+ * Tokens de la app (Material 3, tema claro). Fuente: docs/01-vision-y-alcance/patron-traslado-web.md §5
  * (`app_colors.dart` y `app_theme.dart` de sum-app). Esta hoja es la única fuente de verdad:
  * src/core/ui/tokens.test.ts la compara con esa tabla.
  *

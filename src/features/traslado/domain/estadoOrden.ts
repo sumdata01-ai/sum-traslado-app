@@ -6,7 +6,7 @@
  * (ver `traslado_estado.dart`). No es el estado del servidor (`pendiente`, `en_transito`…).
  *
  * El estado `confirmando` de la app **no existe aquí**: ningún llamador lo activa en producción
- * (hallazgo 3 de `patron-traslado-web.md`) y queda fuera de alcance.
+ * (hallazgo 3 de `docs/01-vision-y-alcance/patron-traslado-web.md`) y queda fuera de alcance.
  */
 export const ESTADOS_ORDEN_LOCAL = [
   'sinIniciar',

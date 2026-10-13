@@ -8,7 +8,7 @@ import {
   transicionarCamara,
 } from './estadoCamara'
 
-// ARQUITECTURA-FRONT.md §5.1, más las cuatro transiciones añadidas (ver estadoCamara.ts).
+// docs/02-arquitectura/arquitectura-front.md §5.1, más las cuatro transiciones añadidas (ver estadoCamara.ts).
 const PERMITIDAS: ReadonlyArray<readonly [EstadoCamara, EstadoCamara]> = [
   ['inactiva', 'solicitando'],
   ['inactiva', 'sinSoporte'],

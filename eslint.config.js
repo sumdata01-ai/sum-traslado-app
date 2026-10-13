@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 // El dominio es puro: ni React, ni el navegador, ni las capas de arriba.
-// Ver ARQUITECTURA-FRONT.md §3 (principio 7) y BACKLOG.md F-01 AC4.
+// Ver docs/02-arquitectura/arquitectura-front.md §3 (principio 7) y docs/07-planificacion/backlog.md F-01 AC4.
 const DOMINIO = 'src/features/**/domain/**/*.{ts,tsx}'
 
 export default defineConfig([

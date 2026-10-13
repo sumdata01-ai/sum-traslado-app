@@ -2,7 +2,7 @@ import { Banner, Button } from '@/core/ui'
 
 /**
  * El backend respondió 403 al pedir las órdenes: el rol de este usuario no puede usar Traslado.
- * La sesión NO se cierra sola; el usuario decide (decisión del 2026-10-09, ver BACKLOG.md O-01).
+ * La sesión NO se cierra sola; el usuario decide (decisión del 2026-10-09, ver docs/07-planificacion/backlog.md O-01).
  */
 export function SinPermisoPage({ mensaje, onCerrarSesion }: { mensaje: string; onCerrarSesion: () => void }) {
   return (

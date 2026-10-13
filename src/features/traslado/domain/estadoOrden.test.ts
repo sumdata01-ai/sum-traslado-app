@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import { ESTADOS_ORDEN_LOCAL, derivarEstadoOrden } from './estadoOrden'
 
-// Fuente: patron-traslado-web.md §2.2 y `derivarEstadoOrden` de traslado_estado.dart.
+// Fuente: docs/01-vision-y-alcance/patron-traslado-web.md §2.2 y `derivarEstadoOrden` de traslado_estado.dart.
 describe('derivarEstadoOrden', () => {
   it.each([
     // total, conArchivo, conStorageKey, esperado

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { CandidatoVin, Catalogos, OpcionCatalogo, OrdenRemota } from '../domain'
+import type { CandidatoVin, Catalogos, OpcionCatalogo, OrdenRemota, OtraOrdenDeVin } from '../domain'
 
 /**
  * Contrato de una orden de `GET /mobile/traslado/mis-ordenes` (comprobado contra el backend de
@@ -80,14 +80,49 @@ export interface VinIdentificado {
   vin: string
   /** Las órdenes **pendientes** de ese vehículo, de cualquier conductor (a propósito: avisa si es de otro). */
   ordenes: OrdenRemota[]
+  /**
+   * Las que **ya no están pendientes** (en tránsito, entregadas, canceladas). Es opcional: el servidor de hoy
+   * no las manda (ver docs/07-planificacion/pedido-backend-vin-otras-ordenes.md) y, sin ellas, la página sigue
+   * como siempre. Una mal formada se salta.
+   */
+  otras?: OtraOrdenDeVin[]
   /** Órdenes que el servidor mandó con datos inválidos y no se muestran. */
   descartadas: number
+}
+
+const otraOrdenSchema = z.object({
+  id_orden: z.number().int(),
+  estado: z.string().min(1),
+  conductor_asignado: conductor.nullish(),
+  fecha_salida: z.string().nullish(),
+  fecha_entrega: z.string().nullish(),
+})
+
+/** Las órdenes no pendientes de un VIN, si el servidor las manda; las malas se saltan y las pendientes se ignoran. */
+function aOtrasOrdenes(crudo: unknown): OtraOrdenDeVin[] {
+  if (!Array.isArray(crudo)) return []
+  const otras: OtraOrdenDeVin[] = []
+  for (const item of crudo) {
+    const r = otraOrdenSchema.safeParse(item)
+    if (!r.success || r.data.estado === 'pendiente') continue
+    const o = r.data
+    otras.push({
+      idOrden: o.id_orden,
+      estado: o.estado,
+      conductorAsignado: o.conductor_asignado
+        ? { id: o.conductor_asignado.id, username: o.conductor_asignado.username, nombreCompleto: o.conductor_asignado.nombre_completo ?? null }
+        : null,
+      fechaSalida: o.fecha_salida ?? null,
+      fechaEntrega: o.fecha_entrega ?? null,
+    })
+  }
+  return otras
 }
 
 /** Lee la respuesta de `GET /mobile/traslado/vin/{vin}`. `null` si no es esa respuesta. */
 export function aVinIdentificado(crudo: unknown): VinIdentificado | null {
   if (typeof crudo !== 'object' || crudo === null) return null
-  const { vin, ordenes } = crudo as { vin?: unknown; ordenes?: unknown }
+  const { vin, ordenes, otras_ordenes } = crudo as { vin?: unknown; ordenes?: unknown; otras_ordenes?: unknown }
   if (typeof vin !== 'string' || vin === '' || !Array.isArray(ordenes)) return null
   const validas: OrdenRemota[] = []
   let descartadas = 0
@@ -96,7 +131,7 @@ export function aVinIdentificado(crudo: unknown): VinIdentificado | null {
     if (orden) validas.push(orden)
     else descartadas++
   }
-  return { vin, ordenes: validas, descartadas }
+  return { vin, ordenes: validas, descartadas, otras: aOtrasOrdenes(otras_ordenes) }
 }
 
 /** Respuesta de `POST /{id}/tomar` y `/{id}/soltar` (`TrasladoTomarOut` del backend). */

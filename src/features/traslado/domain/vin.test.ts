@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
-import { esVinCompleto, extraerVin, normalizarVin, relacionConLaOrden, tipoDeBusqueda } from './vin'
+import { esVinCompleto, extraerVin, normalizarVin, relacionConLaOrden, situacionDeOtraOrden, tipoDeBusqueda } from './vin'
 
 const VIN = 'LSCABN3E2VE840638'
 
@@ -117,5 +117,18 @@ describe('extraerVin: lo que se lee de un QR o código de barras (O-05)', () => 
   it('un texto vacío da vacío', () => {
     expect(extraerVin('')).toBe('')
     expect(extraerVin('   ')).toBe('')
+  })
+})
+
+describe('situacionDeOtraOrden: qué le pasó a una orden que ya no está pendiente', () => {
+  it.each([
+    ['en_transito', 'enTransito'],
+    ['realizado', 'entregada'],
+    ['cerrada', 'entregada'],
+    ['cancelada', 'cancelada'],
+    ['algo_nuevo', 'desconocida'],
+    ['', 'desconocida'],
+  ])('«%s» → %s', (estado, esperado) => {
+    expect(situacionDeOtraOrden(estado)).toBe(esperado)
   })
 })

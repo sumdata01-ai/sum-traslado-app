@@ -1,7 +1,7 @@
 # Traslado web
 
 Front web del flujo de Traslado (salida y entrega de vehículos con fotos), sobre el backend existente.
-Diseño en [ARQUITECTURA-FRONT.md](ARQUITECTURA-FRONT.md), historias en [BACKLOG.md](BACKLOG.md), sprints en [PLAN-SPRINTS.md](PLAN-SPRINTS.md).
+**Documentación:** empieza por el [índice](docs/00-indice.md). Estado y pendientes en [TODO.md](TODO.md); historias en [backlog.md](docs/07-planificacion/backlog.md); decisiones en [docs/06-decisiones/](docs/06-decisiones/). Si usas un asistente (Claude Code, Codex), lee antes [CLAUDE.md](CLAUDE.md) o [AGENTS.md](AGENTS.md).
 
 ## Requisitos
 
@@ -33,30 +33,7 @@ En producción el equivalente será un proxy nginx delante del API (historia D2)
 
 ## Probar desde un celular (HTTPS)
 
-**En la PC no hace falta nada de esto**: usa `npm run dev`. Lo siguiente es solo para teléfonos, que entran por la IP de la red, y una IP por HTTP no es contexto seguro (`getUserMedia` queda bloqueado). Para eso se usa `npm run dev:https`, con dos caminos para el certificado.
-
-### Camino recomendado: certificado de mkcert
-
-1. Instalar mkcert en Windows (por ejemplo `winget install FiloSottile.mkcert`) y ejecutar `mkcert -install`.
-2. En la raíz del proyecto, con la IP de tu PC (`ipconfig`):
-   ```
-   mkdir .certs
-   mkcert -cert-file .certs/dev.pem -key-file .certs/dev-key.pem localhost 127.0.0.1 ::1 192.168.X.X
-   ```
-3. Arrancar con `npm run dev:https`. Vite usa esos archivos automáticamente. La carpeta `.certs/` no se versiona.
-4. **iPhone:** pasar el archivo `rootCA.pem` (ubicación con `mkcert -CAROOT`) al teléfono, instalarlo en *Ajustes › General › VPN y gestión de dispositivos* y activarlo en *Ajustes › General › Información › Ajustes de confianza de certificados*.
-5. **Android:** instalar `rootCA.pem` como certificado de CA. Chrome puede seguir mostrando avisos según la versión.
-6. Abrir `https://192.168.X.X:5173` en el teléfono. La pantalla debe decir «Contexto seguro (HTTPS): sí».
-
-### Camino de respaldo: certificado autofirmado
-
-Sin `.certs/`, Vite genera uno autofirmado (`@vitejs/plugin-basic-ssl`). Sirve para ver la página, pero el teléfono mostrará una advertencia y **no se garantiza** que la cámara funcione. No lo uso como prueba válida de la cámara.
-
-### Si el teléfono no llega a la PC
-
-- Ambos deben estar en la misma red Wi-Fi.
-- Permitir el puerto 5173 en el Firewall de Windows.
-- Ojo: `dev:https` escucha en `0.0.0.0` y el proxy da acceso al backend local a quien esté en la misma red. Úsalo solo en redes de confianza. `npm run dev` escucha solo en `localhost`.
+Una IP de red por HTTP no es contexto seguro y el navegador bloquea la cámara. En la PC usa `npm run dev`. Para un teléfono en la red local se usa `npm run dev:https` con un certificado de mkcert: los pasos (PC, iPhone y Android, firewall, qué hacer si cambia la IP) están en [docs/03-configuracion/https-local.md](docs/03-configuracion/https-local.md). Para ver la versión desplegada en el teléfono no hace falta ningún certificado.
 
 ## Despliegue en Vercel (solo para ver las pantallas)
 
@@ -70,24 +47,30 @@ Sin `.certs/`, Vite genera uno autofirmado (`@vitejs/plugin-basic-ssl`). Sirve p
 
 ## Herramientas de prueba (ocultas)
 
-La home no muestra «Herramientas de prueba». Para verlas, abre la página con `?herramientas` al final de la dirección (por ejemplo `https://sum-traslado-app.vercel.app/?herramientas`, o `https://192.168.1.54:5173/?herramientas` en local). Traen la comprobación de HTTPS y cámara y «Probar la cámara», que solo guarda en el teléfono y **no sube nada**: es la forma segura de probar la cámara y la galería contra la versión desplegada, que apunta a producción.
+La home no muestra «Herramientas de prueba». Para verlas, abre la página con `?herramientas` al final de la dirección (por ejemplo `https://sum-traslado-app.vercel.app/?herramientas`, o `https://192.168.X.X:5173/?herramientas` en local). Traen la comprobación de HTTPS y cámara y «Probar la cámara», que solo guarda en el teléfono y **no sube nada**: es la forma segura de probar la cámara y la galería contra la versión desplegada, que apunta a producción.
 
 ## Estructura
 
 ```
 src/
-  app/                 arranque y pantalla raíz
-  core/config/         URL base del API (relativa)
-  core/http/           cliente HTTP: 401 → renovar y reintentar una vez, 403, tiempo límite
-  core/ui/             tokens (en src/index.css) y componentes base: Button, Banner, Card, SectionHeader, ProgressCounter
-  features/traslado/   (se crea con F-03 en adelante)
+  app/                 pantallas raíz y composición (App, AppShell, HomePage, CapturaPage…)
+  core/                auth, config, http, storage y ui (componentes base y tokens)
+  features/traslado/
     domain/            reglas puras: sin React, sin navegador, sin capas superiores
+    api/               clientes del backend y de GCS, con esquemas zod
+    data/              controladores, puertos y Dexie
+    camera/            sesión de cámara, captura, galería y escáner
+    components/        componentes de la funcionalidad
   test/                configuración de pruebas
+e2e/                   pruebas de extremo a extremo (Playwright)
+docs/                  documentación; ver docs/00-indice.md
 ```
 
-La carpeta `domain/` está protegida por ESLint: si importa React, Dexie, TanStack, el router, una capa superior o un global del navegador (`window`, `navigator`, `indexedDB`…), `npm run lint` falla. La prueba está en [src/test/lint-boundaries.test.ts](src/test/lint-boundaries.test.ts).
+El detalle de cada carpeta está en [docs/02-arquitectura/estructura-src.md](docs/02-arquitectura/estructura-src.md). La carpeta `domain/` está protegida por ESLint: si importa React, Dexie, TanStack, el router, una capa superior o un global del navegador (`window`, `navigator`, `indexedDB`…), `npm run lint` falla. La prueba está en [src/test/lint-boundaries.test.ts](src/test/lint-boundaries.test.ts).
 
 ## Pruebas contra el backend real
+
+> **Ninguna prueba toca producción.** El backend local firma las URLs de subida del bucket de **producción**, así que subir fotos y confirmar de verdad no se prueba (ver [ADR 0008](docs/06-decisiones/0008-no-tocar-produccion.md)).
 
 Toda prueba que usa el backend va a la **base de desarrollo**, a través del backend en `http://localhost:8050`. Las credenciales de un usuario `operario` con `traslado` en `allowed_apps` van en `.env.local` (copia [.env.example](.env.example)); ese archivo **no se versiona**.
 
@@ -98,4 +81,4 @@ Toda prueba que usa el backend va a la **base de desarrollo**, a través del bac
 
 - El login admite **10 por minuto** y el refresh 20: no corras las pruebas contra el backend varias veces seguidas. Una corrida completa de `npm run test:e2e` hace unos 16 logins y **puede pasar el límite**: el backend responde «Demasiados intentos» y fallan las últimas pruebas (se ve en el aviso del login). Si pasa, corre los archivos por separado con un minuto entre corridas (`npx playwright test e2e/home.spec.ts`, etc.).
 - Cada prueba que toma o confirma una orden la consume. Las de Traslado necesitan datos que el backend pueda regenerar. `e2e/vin.spec.ts` hace **10 logins en unos 40 segundos** (uno por prueba y navegador): está en el límite, así que no la corras junto a otro archivo de E2E. Las E2E que **toman órdenes** (`tomar`, `catalogo`) las devuelven al pool en un `afterAll` (`e2e/soltarPropias.ts`), también si fallan; si una corrida se corta de golpe, el usuario de prueba puede quedar con órdenes tomadas: se devuelven con «Soltar» o corriendo cualquiera de esas dos pruebas.
-- La prueba `e2e/login.spec.ts` está marcada como **fallo esperado** mientras el backend de desarrollo emita la cookie de refresh con `SameSite=None` y sin `Secure` (el navegador la rechaza). Ver `PLAN-SPRINTS.md` §2.2.
+- La prueba `e2e/login.spec.ts` está marcada como **fallo esperado** mientras el backend de desarrollo emita la cookie de refresh con `SameSite=None` y sin `Secure` (el navegador la rechaza). Ver `plan-sprints.md` §2.2.

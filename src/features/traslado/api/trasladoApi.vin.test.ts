@@ -53,7 +53,7 @@ describe('identificarVin', () => {
 
   it('AC3 · 200 con la lista vacía es válido y NO es un error: el vehículo existe sin orden pendiente', async () => {
     const { api } = apiConRespuesta(() => json(200, { vin: VIN, ordenes: [] }))
-    expect(await api.identificarVin(VIN)).toEqual({ vin: VIN, ordenes: [], descartadas: 0 })
+    expect(await api.identificarVin(VIN)).toEqual({ vin: VIN, ordenes: [], descartadas: 0, otras: [] })
   })
 
   it('AC2 · 404 llega como error con código 404 (VIN que no es un vehículo conocido)', async () => {
@@ -152,5 +152,64 @@ describe('buscarVin', () => {
   it('un 422 (menos de 4 caracteres) llega como error con código: por eso no se debe llamar con menos', async () => {
     const { api } = apiConRespuesta(() => json(422, { detail: [{ msg: 'String should have at least 4 characters' }] }))
     await expect(api.buscarVin('abc')).rejects.toMatchObject({ status: 422 })
+  })
+})
+
+describe('identificarVin · otras órdenes del VIN (las que ya no están pendientes)', () => {
+  const enTransito = {
+    id_orden: 9001,
+    estado: 'en_transito',
+    conductor_asignado: { id: 303, username: 'frank', nombre_completo: 'Frank Xavier Cavero Ruiz' },
+    fecha_salida: '2026-10-13T15:57:00Z',
+    fecha_entrega: null,
+  }
+
+  it('lee las órdenes que ya salieron, con su conductor y sus fechas', async () => {
+    const { api } = apiConRespuesta(() => json(200, { vin: VIN, ordenes: [], otras_ordenes: [enTransito] }))
+    const r = await api.identificarVin(VIN)
+    expect(r.ordenes).toEqual([])
+    expect(r.otras).toEqual([
+      {
+        idOrden: 9001,
+        estado: 'en_transito',
+        conductorAsignado: { id: 303, username: 'frank', nombreCompleto: 'Frank Xavier Cavero Ruiz' },
+        fechaSalida: '2026-10-13T15:57:00Z',
+        fechaEntrega: null,
+      },
+    ])
+  })
+
+  it('lee también la fecha de entrega de una orden ya entregada', async () => {
+    const { api } = apiConRespuesta(() => json(200, { vin: VIN, ordenes: [], otras_ordenes: [{ ...enTransito, estado: 'realizado', fecha_entrega: '2026-10-13T20:30:00Z' }] }))
+    const r = await api.identificarVin(VIN)
+    expect(r.otras?.[0]).toMatchObject({ estado: 'realizado', fechaSalida: '2026-10-13T15:57:00Z', fechaEntrega: '2026-10-13T20:30:00Z' })
+  })
+
+  it('si el servidor todavía no manda el campo (hoy), no hay otras y nada se rompe', async () => {
+    const { api } = apiConRespuesta(() => json(200, { vin: VIN, ordenes: [] }))
+    expect((await api.identificarVin(VIN)).otras).toEqual([])
+  })
+
+  it.each([null, 'texto', 5, { x: 1 }])('un campo que no es una lista (%j) se toma por vacío', async (basura) => {
+    const { api } = apiConRespuesta(() => json(200, { vin: VIN, ordenes: [], otras_ordenes: basura }))
+    expect((await api.identificarVin(VIN)).otras).toEqual([])
+  })
+
+  it('una orden mal formada se salta sin tumbar las demás ni las pendientes', async () => {
+    const { api } = apiConRespuesta(() => json(200, { vin: VIN, ordenes: [ordenCruda], otras_ordenes: [{ estado: 'en_transito' }, enTransito, 'basura'] }))
+    const r = await api.identificarVin(VIN)
+    expect(r.ordenes).toHaveLength(1)
+    expect(r.otras?.map((o) => o.idOrden)).toEqual([9001])
+    expect(r.descartadas).toBe(0) // las «otras» no cuentan como pendientes inválidas
+  })
+
+  it('una orden «pendiente» dentro de las otras se ignora: las pendientes van en `ordenes`', async () => {
+    const { api } = apiConRespuesta(() => json(200, { vin: VIN, ordenes: [], otras_ordenes: [{ ...enTransito, estado: 'pendiente' }] }))
+    expect((await api.identificarVin(VIN)).otras).toEqual([])
+  })
+
+  it('sin conductor ni fechas, todo queda en null', async () => {
+    const { api } = apiConRespuesta(() => json(200, { vin: VIN, ordenes: [], otras_ordenes: [{ id_orden: 1, estado: 'cancelada' }] }))
+    expect((await api.identificarVin(VIN)).otras).toEqual([{ idOrden: 1, estado: 'cancelada', conductorAsignado: null, fechaSalida: null, fechaEntrega: null }])
   })
 })

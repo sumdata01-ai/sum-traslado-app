@@ -44,7 +44,7 @@ function comoAlmacenError(causa: unknown): AlmacenError {
 }
 
 /**
- * Guarda las fotos del operario en IndexedDB. Ver ARQUITECTURA-FRONT.md §6 y las fallas C13 a C15.
+ * Guarda las fotos del operario en IndexedDB. Ver docs/02-arquitectura/arquitectura-front.md §6 y las fallas C13 a C15.
  *
  * Guardar una foto sigue siempre este camino:
  *  1. Se inserta una fila `writing` en `enEscritura`, **sin el Blob**, antes de escribirlo.

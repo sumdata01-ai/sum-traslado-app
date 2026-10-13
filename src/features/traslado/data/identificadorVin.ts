@@ -1,6 +1,6 @@
 import { ApiError } from '@/core/http/ApiError'
 import type { TrasladoApi } from '../api/trasladoApi'
-import { type CandidatoVin, type OrdenRemota, type RelacionConLaOrden, normalizarVin, relacionConLaOrden, tipoDeBusqueda } from '../domain'
+import { type CandidatoVin, type OrdenRemota, type OtraOrdenDeVin, type RelacionConLaOrden, normalizarVin, relacionConLaOrden, tipoDeBusqueda } from '../domain'
 
 /** Una orden hallada por VIN, con su relación con quien busca. */
 export interface OrdenEncontrada {
@@ -12,6 +12,12 @@ export interface OrdenEncontrada {
  * Qué resultó de «buscar en el sistema» (O-03). Cada caso tiene su propio estado porque se dicen cosas
  * distintas y mandan a hacer cosas distintas: «no existe ese vehículo» no es «existe pero no tiene orden».
  */
+/** Una orden del VIN que ya salió, se entregó o se canceló, y qué relación tiene con quien busca. */
+export interface OtraOrdenEncontrada {
+  orden: OtraOrdenDeVin
+  relacion: RelacionConLaOrden
+}
+
 export type ResultadoBusqueda =
   | { tipo: 'inactivo' }
   | { tipo: 'buscando' }
@@ -24,6 +30,8 @@ export type ResultadoBusqueda =
   | { tipo: 'noConocido'; vin: string }
   /** 200 con lista vacía: el vehículo existe, pero no tiene una orden pendiente. */
   | { tipo: 'sinOrden'; vin: string }
+  /** No hay pendientes, pero el servidor dice que ya hubo una orden que salió, se entregó o se canceló. */
+  | { tipo: 'yaTomada'; vin: string; otras: readonly OtraOrdenEncontrada[] }
   /** 422 del servidor, o un texto que ya se ve que no es un VIN. */
   | { tipo: 'formatoInvalido'; texto: string }
   | { tipo: 'ordenes'; vin: string; ordenes: readonly OrdenEncontrada[] }
@@ -112,9 +120,13 @@ export class IdentificadorVin {
   async #identificar(vin: string, idUsuario: number | null, generacion: number): Promise<void> {
     this.#publicar({ tipo: 'buscando' })
     try {
-      const { ordenes } = await this.#api.identificarVin(vin)
+      const { ordenes, otras = [] } = await this.#api.identificarVin(vin)
       if (generacion !== this.#generacion) return
-      if (ordenes.length === 0) return this.#publicar({ tipo: 'sinOrden', vin })
+      if (ordenes.length === 0) {
+        // Con una orden pendiente se muestra esa (lo que se puede hacer); sin ella, si ya hubo otra, se dice cuál.
+        if (otras.length === 0) return this.#publicar({ tipo: 'sinOrden', vin })
+        return this.#publicar({ tipo: 'yaTomada', vin, otras: otras.map((orden) => ({ orden, relacion: relacionConLaOrden(orden.conductorAsignado, idUsuario) })) })
+      }
       this.#publicar({
         tipo: 'ordenes',
         vin,

@@ -1,9 +1,11 @@
 # Backlog — Traslado web
 
+Última actualización: 2026-10-13 | Fuente: decisiones del usuario y pruebas por historia | Estado: vigente
+
 **Para quién:** el equipo que construye la versión web de Traslado.
 **Fecha:** 2026-10-09.
 **Convención:** *confirmado* sale del código revisado; *recomendación* es propuesta; *no verificado* queda abierto.
-**Documentos hermanos:** [patron-traslado-web.md](patron-traslado-web.md) (contrato y estados), [ARQUITECTURA-FRONT.md](ARQUITECTURA-FRONT.md) (diseño y fallas C1–C19), [PLAN-SPRINTS.md](PLAN-SPRINTS.md) (secuencia de sprints, DoR/DoD, riesgos).
+**Documentos hermanos:** [patron-traslado-web.md](../01-vision-y-alcance/patron-traslado-web.md) (contrato y estados), [arquitectura-front.md](../02-arquitectura/arquitectura-front.md) (diseño y fallas C1–C19), [plan-sprints.md](plan-sprints.md) (secuencia de sprints, DoR/DoD, riesgos).
 
 **Tipos de prueba usados abajo**
 
@@ -31,9 +33,9 @@
 | CORS del bucket GCS | Se configura desde el proyecto GCP, por origen. |
 | Resolución de la foto | Se valida en testeo (P-01). Se parte de 1920 px de lado largo, como constante de configuración. |
 | Telemetría y bitácora | **Fuera por ahora** (incluye «Copiar diagnóstico»). |
-| Pruebas contra el backend | **Toda prueba va a la base de desarrollo, a través del backend** (2026-10-09). Las de integración y extremo a extremo usan el backend real, no MSW. Detalle y consecuencias en PLAN-SPRINTS.md §6.1. |
+| Pruebas contra el backend | **Toda prueba va a la base de desarrollo, a través del backend** (2026-10-09). Las de integración y extremo a extremo usan el backend real, no MSW. Detalle y consecuencias en plan-sprints.md §6.1. |
 
-**Dependencias nuevas** (no están en el portal): `zod`, `dexie-react-hooks` y `fake-indexeddb` (solo pruebas). **Aprobadas el 2026-10-09**, mientras resulten útiles; se revisan al final del Sprint 2 (PLAN-SPRINTS.md §6.1).
+**Dependencias nuevas** (no están en el portal): `zod`, `dexie-react-hooks` y `fake-indexeddb` (solo pruebas). **Aprobadas el 2026-10-09**, mientras resulten útiles; se revisan al final del Sprint 2 (plan-sprints.md §6.1).
 
 ---
 
@@ -112,7 +114,7 @@ Como operario, quiero iniciar sesión y conservarla mientras trabajo, para no re
 - **Pruebas:** [I] login ok, 401, sin `traslado`, 403. [E] login → home. [M] recargar en Safari de iPhone y comprobar que la sesión sigue (es la prueba clave de D1).
 
 ### A-03 Una sola sesión en todas las pestañas · Tamaño M · *Depende de A-02* · *Añadida el 2026-10-09*
-**Estado (2026-10-09):** hecha en código; AC1 a AC6 cubiertos por pruebas con pestañas simuladas, y el logout entre dos pestañas reales con Playwright. Pasar sola a otra persona no se puede probar en un navegador real hasta que el backend corrija la cookie (ver A-02) y haya un segundo usuario de prueba. Detalle en [PLAN-SPRINTS.md](PLAN-SPRINTS.md) §2.3.
+**Estado (2026-10-09):** hecha en código; AC1 a AC6 cubiertos por pruebas con pestañas simuladas, y el logout entre dos pestañas reales con Playwright. Pasar sola a otra persona no se puede probar en un navegador real hasta que el backend corrija la cookie (ver A-02) y haya un segundo usuario de prueba. Detalle en [plan-sprints.md](plan-sprints.md) §2.3.
 
 Como operario que comparte el navegador, quiero que todas las pestañas tengan el mismo usuario, para que nadie trabaje ni vea órdenes con la sesión de otra persona.
 
@@ -130,7 +132,7 @@ Como operario que comparte el navegador, quiero que todas las pestañas tengan e
 
 ## E2 — Cámara y captura
 
-Las fallas C1–C19 están en [ARQUITECTURA-FRONT.md](ARQUITECTURA-FRONT.md) §2.
+Las fallas C1–C19 están en [arquitectura-front.md](../02-arquitectura/arquitectura-front.md) §2.
 
 ### T1 Detectar soporte de cámara y explicar bloqueos · Tamaño S
 Como operario, quiero saber por qué no abre la cámara y qué hacer, para resolverlo sin llamar a soporte.
@@ -152,7 +154,7 @@ Como operario, quiero que la cámara se mantenga estable y se recupere sola, par
 - **AC6.** Given salgo del formulario, When se desmonta, Then todos los tracks quedan detenidos.
 - **AC7.** Given una transición no permitida de la máquina, When se intenta, Then lanza un error de programación.
 - **Pruebas:** [U] tabla de transiciones. [C] widget con un `CameraPort` falso por cada estado. [E] flujo con cámara falsa de Chromium: 6 capturas con una sola apertura. [M] bloquear pantalla, recibir una llamada, cambiar de app y volver, en iPhone y Android.
-- **Riesgo:** el comportamiento de iOS al volver de segundo plano no está verificado; ver el spike S-01 en PLAN-SPRINTS.md.
+- **Riesgo:** el comportamiento de iOS al volver de segundo plano no está verificado; ver el spike S-01 en plan-sprints.md.
 
 ### T3 Capturar un frame JPEG verificado · Tamaño M · *Depende de T2*
 Como operario, quiero que la foto solo se acepte si salió bien, para no descubrir después que quedó vacía.
@@ -204,7 +206,7 @@ Como operario, quiero retomar donde estaba tras una recarga, para no repetir fot
 ## E3 — Órdenes
 
 ### O-01 Home con «Mis traslados» y «Disponibles hoy» · Tamaño L · *Depende de A-02, F-03*
-**Estado (2026-10-09):** hecha en código; AC1 a AC6 cubiertos por pruebas. Falta mirarla en un teléfono y probar el 403 con un usuario real de rol no permitido. Detalle en [PLAN-SPRINTS.md](PLAN-SPRINTS.md) §2.3.
+**Estado (2026-10-09):** hecha en código; AC1 a AC6 cubiertos por pruebas. Falta mirarla en un teléfono y probar el 403 con un usuario real de rol no permitido. Detalle en [plan-sprints.md](plan-sprints.md) §2.3.
 
 Como operario, quiero ver mis órdenes y las del pool del día, para saber qué me toca.
 
@@ -219,7 +221,7 @@ Como operario, quiero ver mis órdenes y las del pool del día, para saber qué 
 - **Pruebas:** [U] reglas de mezcla de la caché. [I] `mis-ordenes` con y sin datos. [C] color y etiqueta por estado. [E] modo sin conexión de Playwright con el filtro. [I] 403 en `mis-ordenes` muestra la pantalla y no cierra la sesión. [U] **prueba de guarda:** toda función de `trasladoApi` pasa `cerrarSesionEn403: false`.
 
 ### O-02 Tomar y soltar una orden · Tamaño M · *Depende de O-01*
-**Estado (2026-10-10):** hecha en código; AC1 a AC7 cubiertos por pruebas, y tomar/soltar probados contra una orden real de la base de desarrollo. Falta probarla en un teléfono. Detalle en [PLAN-SPRINTS.md](PLAN-SPRINTS.md) §2.3.
+**Estado (2026-10-10):** hecha en código; AC1 a AC7 cubiertos por pruebas, y tomar/soltar probados contra una orden real de la base de desarrollo. Falta probarla en un teléfono. Detalle en [plan-sprints.md](plan-sprints.md) §2.3.
 
 Como operario, quiero tomar una orden del pool, para empezar el despacho.
 
@@ -235,7 +237,7 @@ Como operario, quiero tomar una orden del pool, para empezar el despacho.
 - **Pruebas:** [I] 200, 409 con nombre, idempotencia. [E] la carrera de `patron-traslado-web.md` §4.2: A sin señal, B toma, A reconecta y conserva sus fotos. [I] soltar 409.
 
 ### O-03 Identificar un VIN · Tamaño M · *Depende de A-01*
-**Estado (2026-10-10):** hecha en código; AC1 a AC5 cubiertos por pruebas, y las E2E en Chrome y Edge. Falta mirarla en un teléfono. **Pendiente de decisión:** qué hacer con la búsqueda parcial. Detalle en [PLAN-SPRINTS.md](PLAN-SPRINTS.md) §2.3.
+**Estado (2026-10-10):** hecha en código; AC1 a AC5 cubiertos por pruebas, y las E2E en Chrome y Edge. Falta mirarla en un teléfono. **Pendiente de decisión:** qué hacer con la búsqueda parcial. Detalle en [plan-sprints.md](plan-sprints.md) §2.3.
 - **AC1.** Given un VIN exacto, When consulto, Then se codifica en la URL.
 - **AC2.** Given 404, When responde, Then veo «VIN no conocido».
 - **AC3.** Given 200 con lista vacía, When responde, Then veo «sin orden pendiente» (mensaje distinto del 404).
@@ -244,7 +246,7 @@ Como operario, quiero tomar una orden del pool, para empezar el despacho.
 - **Pruebas:** [I] 200, 404, 422, lista vacía. [U] el corte de 4 caracteres. [C] los tres mensajes.
 
 ### O-04 Catálogos y selector de placa y proveedor · Tamaño S · *Depende de O-01*
-**Estado (2026-10-10):** hecha en código; AC1 a AC3 cubiertos por pruebas. **AC4 queda para E4-02:** lo elegido se guarda en el teléfono y el `null` se aplica al confirmar la salida, que aún no existe. Falta mirarla en un teléfono. Detalle en [PLAN-SPRINTS.md](PLAN-SPRINTS.md) §2.3.
+**Estado (2026-10-10):** hecha en código; AC1 a AC3 cubiertos por pruebas. **AC4 queda para E4-02:** lo elegido se guarda en el teléfono y el `null` se aplica al confirmar la salida, que aún no existe. Falta mirarla en un teléfono. Detalle en [plan-sprints.md](plan-sprints.md) §2.3.
 
 - **AC1.** Given el formulario de salida, When abro el selector de placa, Then puedo filtrar por código y la lista tiene una altura máxima de 224 px.
 - **AC2.** Given una placa con estado, When se lista, Then el estado aparece como texto («afuera»), no como color.
@@ -411,7 +413,7 @@ Como equipo, quiero comprobar la captura en teléfonos reales, para validar lo q
 | Revisión de seguridad del refresh token (solo si B) | Seguridad de la información | No verificado |
 | ¿SUM tiene dominio propio y quién controla el DNS? | TI / infraestructura | No verificado |
 | CORS del bucket para los orígenes de desarrollo | Administración del proyecto GCP | No verificado |
-| Casos de prueba en el backend (lista mínima en PLAN-SPRINTS.md §6.1) y un entorno de pruebas con base propia | Equipo de backend | En curso; falta confirmar cobertura y entorno |
+| Casos de prueba en el backend (lista mínima en plan-sprints.md §6.1) y un entorno de pruebas con base propia | Equipo de backend | En curso; falta confirmar cobertura y entorno |
 | Qué roles tienen hoy los usuarios con `traslado` en `allowed_apps`, para saber si existe algún rol fuera de `admin`, `supervisor` y `operario` (hoy el 403 es solo una hipótesis) | Equipo de backend | No verificado |
 | Un iPhone y un Android para probar, con modelo y versión de sistema | Quien coordina el testeo | Se probará en ambos cuando haya algo que probar; modelos sin definir |
 

@@ -15,7 +15,7 @@ const VARIANTES: Record<VarianteBoton, string> = {
   peligro: 'bg-danger text-surface hover:bg-danger-ink',
 }
 
-// Compacto: los botones de tarjeta miden de 30 a 32 px (patron-traslado-web.md §5). El normal mide
+// Compacto: los botones de tarjeta miden de 30 a 32 px (docs/01-vision-y-alcance/patron-traslado-web.md §5). El normal mide
 // 44 px de alto como mínimo para tocarlo con el pulgar; ese valor no está en el documento.
 const TAMANOS: Record<TamanoBoton, string> = {
   normal: 'min-h-11 px-5',

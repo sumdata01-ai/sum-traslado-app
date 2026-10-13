@@ -1,5 +1,5 @@
 /**
- * Máquina de estados de la sesión de cámara. Ver ARQUITECTURA-FRONT.md §5.1.
+ * Máquina de estados de la sesión de cámara. Ver docs/02-arquitectura/arquitectura-front.md §5.1.
  *
  * Respecto del diagrama original hay cuatro transiciones más, para que un evento que llega en mal
  * momento no deje la sesión sin salida: pasar a segundo plano mientras se pide o inicia la cámara

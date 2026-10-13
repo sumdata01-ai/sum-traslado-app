@@ -1,6 +1,6 @@
 import { Banner, Button, Card } from '@/core/ui'
-import { type CandidatoVin, normalizarVin, tipoDeBusqueda } from '../domain'
-import type { OrdenEncontrada, ResultadoBusqueda } from '../data/identificadorVin'
+import { type CandidatoVin, normalizarVin, situacionDeOtraOrden, tipoDeBusqueda } from '../domain'
+import type { OrdenEncontrada, OtraOrdenEncontrada, ResultadoBusqueda } from '../data/identificadorVin'
 
 export interface BuscarEnElSistemaProps {
   /** Lo que el operario escribió en el filtro de VIN: no apareció en la lista del teléfono. */
@@ -79,6 +79,14 @@ function Resultado({ resultado, onElegirCandidato, onTomar, onMostrar, ocupadas 
         <Banner tono="warning">
           <strong>Sin orden pendiente.</strong> El vehículo {resultado.vin} existe, pero no tiene una orden pendiente. Espera a que el supervisor de despacho la cree.
         </Banner>
+      )
+    case 'yaTomada':
+      return (
+        <div className="flex flex-col gap-2">
+          {resultado.otras.map((otra) => (
+            <OtraOrdenHallada key={otra.orden.idOrden} vin={resultado.vin} encontrada={otra} onMostrar={onMostrar} />
+          ))}
+        </div>
       )
     case 'formatoInvalido':
       return (
@@ -169,4 +177,64 @@ function OrdenHallada({
       )}
     </div>
   )
+}
+
+/** «13/10, 10:57» en hora local; vacío si la fecha no se puede leer. */
+function fechaLegible(iso: string | null): string {
+  if (iso === null) return ''
+  const fecha = new Date(iso)
+  if (Number.isNaN(fecha.getTime())) return ''
+  return fecha.toLocaleString('es-PE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+/**
+ * Una orden del VIN que ya no está pendiente. Dice **qué le pasó y de quién es**, para que quien escanea un
+ * vehículo que otra persona ya sacó no se quede esperando «a que el supervisor cree la orden».
+ */
+function OtraOrdenHallada({ vin, encontrada, onMostrar }: { vin: string; encontrada: OtraOrdenEncontrada; onMostrar: (vin: string) => void }) {
+  const { orden, relacion } = encontrada
+  const quien = orden.conductorAsignado?.nombreCompleto ?? orden.conductorAsignado?.username ?? null
+  const salio = fechaLegible(orden.fechaSalida)
+  const entrego = fechaLegible(orden.fechaEntrega)
+
+  switch (situacionDeOtraOrden(orden.estado)) {
+    case 'enTransito':
+      if (relacion === 'mia') {
+        return (
+          <Banner tono="info">
+            <strong>Ya es tuya y está en tránsito.</strong> {vin} ya salió{salio && ` el ${salio}`}. Lo que sigue es la entrega.
+            <span className="mt-2 flex justify-end">
+              <Button variante="secundario" tamano="compacto" aria-label={`Ver ${vin} en mis traslados`} onClick={() => onMostrar(vin)}>
+                Ver en mis traslados
+              </Button>
+            </span>
+          </Banner>
+        )
+      }
+      return (
+        <Banner tono="warning">
+          <strong>Orden ya tomada</strong>
+          {salio && ` el ${salio}`}
+        </Banner>
+      )
+    case 'entregada':
+      return (
+        <Banner tono="warning">
+          <strong>Orden ya entregada.</strong> {vin} se entregó{entrego && ` el ${entrego}`}
+          {quien && ` (asignada a ${quien})`}. No hay nada más que hacer con ella.
+        </Banner>
+      )
+    case 'cancelada':
+      return (
+        <Banner tono="warning">
+          <strong>Orden cancelada.</strong> La orden de {vin} fue cancelada. Si debería seguir, avisa a tu supervisor.
+        </Banner>
+      )
+    case 'desconocida':
+      return (
+        <Banner tono="warning">
+          <strong>Orden en otro estado.</strong> {vin} tiene una orden en estado «{orden.estado}». Avisa a tu supervisor.
+        </Banner>
+      )
+  }
 }

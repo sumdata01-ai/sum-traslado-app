@@ -15,7 +15,7 @@ function leer(patron: RegExp): Map<string, string> {
 const colores = leer(/--color-([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;/g)
 const radios = leer(/--radius-([a-z0-9-]+):\s*(\d+px)\s*;/g)
 
-// patron-traslado-web.md §5 (app_colors.dart): nombre en la web ← nombre en la app.
+// docs/01-vision-y-alcance/patron-traslado-web.md §5 (app_colors.dart): nombre en la web ← nombre en la app.
 const TABLA_DEL_PATRON: ReadonlyArray<readonly [string, string, string]> = [
   ['primary', 'primary', '#1F4F8E'],
   ['primary-deep', 'primaryDeep', '#0F2A5E'],

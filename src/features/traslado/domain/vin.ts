@@ -1,3 +1,5 @@
+import type { Conductor } from './orden'
+
 /**
  * Un VIN completo tiene 17 caracteres: letras A-Z **sin I, O ni Q** (se confunden con 1 y 0) y números.
  * Es la misma regla que `validar_vin` del backend (`^[A-HJ-NPR-Z0-9]{17}$`): si el cliente fuera más
@@ -45,6 +47,39 @@ export function tipoDeBusqueda(texto: string): TipoBusqueda {
   if (vin.length < MINIMO_BUSQUEDA_PARCIAL) return 'corto'
   if (vin.length < LARGO_VIN) return 'parcial'
   return VIN_COMPLETO.test(vin) ? 'exacto' : 'invalido'
+}
+
+/**
+ * Una orden de un VIN que **ya no está pendiente**: salió, se entregó o se canceló. El servidor puede
+ * mandarlas aparte de las pendientes (campo `otras_ordenes` de `/vin/{vin}`) para poder decir
+ * «esta orden ya la tiene X» en vez de «no hay orden pendiente».
+ */
+export interface OtraOrdenDeVin {
+  idOrden: number
+  /** Tal como lo manda el servidor (`en_transito`, `realizado`, `cerrada`, `cancelada`…). */
+  estado: string
+  conductorAsignado: Conductor | null
+  /** Instante en que salió (ISO), si se sabe. */
+  fechaSalida: string | null
+  /** Instante en que se entregó (ISO), si se sabe. */
+  fechaEntrega: string | null
+}
+
+/** Qué le pasó a una orden que ya no está pendiente, en palabras del operario. */
+export type SituacionDeOtraOrden = 'enTransito' | 'entregada' | 'cancelada' | 'desconocida'
+
+export function situacionDeOtraOrden(estado: string): SituacionDeOtraOrden {
+  switch (estado) {
+    case 'en_transito':
+      return 'enTransito'
+    case 'realizado':
+    case 'cerrada':
+      return 'entregada'
+    case 'cancelada':
+      return 'cancelada'
+    default:
+      return 'desconocida'
+  }
 }
 
 /** Un vehículo candidato de la búsqueda parcial. */

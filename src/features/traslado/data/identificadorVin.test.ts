@@ -261,3 +261,60 @@ describe('suscripción', () => {
     expect(aviso).not.toHaveBeenCalled()
   })
 })
+
+describe('orden que ya no está pendiente (en tránsito, entregada, cancelada)', () => {
+  const frank = { id: 303, username: 'frank', nombreCompleto: 'Frank Xavier Cavero Ruiz' }
+  const otra = (extra: Partial<import('../domain').OtraOrdenDeVin> = {}): import('../domain').OtraOrdenDeVin => ({
+    idOrden: 9001,
+    estado: 'en_transito',
+    conductorAsignado: frank,
+    fechaSalida: '2026-10-13T15:57:00Z',
+    fechaEntrega: null,
+    ...extra,
+  })
+  const conOtras = (otras: import('../domain').OtraOrdenDeVin[]) => async (vin: string): Promise<VinIdentificado> => ({ vin, ordenes: [], descartadas: 0, otras })
+
+  it('sin pendientes pero con una orden que ya salió → «yaTomada» con quién la tiene (no «sin orden»)', async () => {
+    const m = montar({ identificar: conOtras([otra()]) })
+    await m.identificador.buscar(VIN, YO)
+    expect(m.resultado()).toEqual({ tipo: 'yaTomada', vin: VIN, otras: [{ orden: otra(), relacion: 'deOtro' }] })
+  })
+
+  it('si la tiene quien busca, la relación es «mia»', async () => {
+    const m = montar({ identificar: conOtras([otra({ conductorAsignado: yo })]) })
+    await m.identificador.buscar(VIN, YO)
+    const r = m.resultado()
+    expect(r.tipo === 'yaTomada' && r.otras[0]?.relacion).toBe('mia')
+  })
+
+  it('sin conductor asignado la relación es «delPool»', async () => {
+    const m = montar({ identificar: conOtras([otra({ conductorAsignado: null })]) })
+    await m.identificador.buscar(VIN, YO)
+    const r = m.resultado()
+    expect(r.tipo === 'yaTomada' && r.otras[0]?.relacion).toBe('delPool')
+  })
+
+  it('con una orden PENDIENTE se muestra esa: lo que se puede hacer manda sobre el historial', async () => {
+    const m = montar({ identificar: async (vin) => ({ vin, ordenes: [ordenRemota(1, { vin, conductorAsignado: ana })], descartadas: 0, otras: [otra()] }) })
+    await m.identificador.buscar(VIN, YO)
+    expect(m.resultado().tipo).toBe('ordenes')
+  })
+
+  it('sin pendientes ni otras sigue siendo «sin orden»', async () => {
+    const m = montar({ identificar: conOtras([]) })
+    await m.identificador.buscar(VIN, YO)
+    expect(m.resultado()).toEqual({ tipo: 'sinOrden', vin: VIN })
+  })
+
+  it('un servidor que no manda el campo (hoy) sigue dando «sin orden»', async () => {
+    const m = montar({ identificar: async (vin) => ({ vin, ordenes: [], descartadas: 0 }) })
+    await m.identificador.buscar(VIN, YO)
+    expect(m.resultado()).toEqual({ tipo: 'sinOrden', vin: VIN })
+  })
+
+  it('también cuando se llega por la búsqueda parcial con un solo candidato', async () => {
+    const m = montar({ buscar: async () => candidatos(VIN), identificar: conOtras([otra()]) })
+    await m.identificador.buscar('lsca', YO)
+    expect(m.resultado().tipo).toBe('yaTomada')
+  })
+})

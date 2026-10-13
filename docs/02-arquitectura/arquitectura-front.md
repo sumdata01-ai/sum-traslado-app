@@ -1,9 +1,13 @@
 # Traslado web — patrón de arquitectura del front
 
+Última actualización: 2026-10-09 (diseño original; movido a docs/ el 2026-10-13) | Fuente: código revisado y recomendaciones | Estado: borrador histórico
+
+> **Diseño original, no la implementación.** Lo vigente está en [vision-general.md](vision-general.md) y [estructura-src.md](estructura-src.md). Varias propuestas de este documento no se construyeron (carpeta `sync/`, `pages/`, `diagnostico/`, router, MSW, drenador): ver [discrepancias.md](../ai/discrepancias.md).
+
 **Para quién:** quien construya el front de Traslado en este proyecto.
 **Fecha:** 2026-10-09.
 **Convención:** *confirmado* sale del código revisado; *recomendación* es propuesta de diseño; *no verificado* queda abierto.
-**Documentos hermanos:** [patron-traslado-web.md](patron-traslado-web.md) (contrato y estados), [BACKLOG.md](BACKLOG.md) (pendientes).
+**Documentos hermanos:** [patron-traslado-web.md](../01-vision-y-alcance/patron-traslado-web.md) (contrato y estados), [backlog.md](../07-planificacion/backlog.md) (pendientes).
 
 ---
 
@@ -13,7 +17,7 @@
 
 Todo el diseño se ordena alrededor de esa frase. Se mide con tres indicadores (§9).
 
-Restricciones ya decididas (ver BACKLOG.md): captura con `getUserMedia` dentro de la página, Android e iPhone, sin PWA, endpoints existentes, `strict` en TypeScript.
+Restricciones ya decididas (ver backlog.md): captura con `getUserMedia` dentro de la página, Android e iPhone, sin PWA, endpoints existentes, `strict` en TypeScript.
 
 ---
 
@@ -32,18 +36,18 @@ Este catálogo es el núcleo del diseño. Cada fila es un caso de prueba y una p
 | C7 | **Video no listo** (negro, 0×0) | `videoWidth === 0` o `readyState < 2` | Botón de disparo deshabilitado hasta tener el primer frame. Tiempo límite con mensaje. |
 | C8 | **`play()` rechazado** | La promesa de `video.play()` falla | Mostrar botón de inicio con gesto del usuario. |
 | C9 | **Blob nulo o vacío** | `toBlob` devuelve `null` o `size === 0` | Rechazar con «La foto llegó vacía. Vuelve a tomarla». Mismo criterio que la app. |
-| C10 | **Formato equivocado** | `blob.type !== 'image/jpeg'` | Pedir siempre JPEG y verificar el tipo del resultado. La especificación hace que `toBlob` caiga a PNG si no soporta el tipo pedido, así que no confiar en WebP. El portal usa WebP, pero Traslado sube `image/jpeg` ([traslado_foto_service.dart:181](../sum-app/lib/features/traslado/data/traslado_foto_service.dart#L181)). |
+| C10 | **Formato equivocado** | `blob.type !== 'image/jpeg'` | Pedir siempre JPEG y verificar el tipo del resultado. La especificación hace que `toBlob` caiga a PNG si no soporta el tipo pedido, así que no confiar en WebP. El portal usa WebP, pero Traslado sube `image/jpeg` ([traslado_foto_service.dart:181](../../../sum-app/lib/features/traslado/data/traslado_foto_service.dart#L181)). |
 | C11 | **Memoria agotada en el canvas** | Excepción en `drawImage` o `toBlob` | `try/catch`, lado largo máximo de 1920 px (el portal ya usa 1920), liberar el canvas (`width = 0`) tras cada captura. |
 | C12 | **Doble disparo** | Segundo toque durante `capturando` | El botón se bloquea. Cada foto lleva `crypto.randomUUID()`. |
 | C13 | **No se pudo guardar** (`QuotaExceededError`, modo privado) | Excepción de Dexie | Fila `failed_local`, un reintento, aviso «Espacio insuficiente». Consultar `navigator.storage.estimate()` al abrir el formulario. |
 | C14 | **Pestaña descartada o recargada en plena escritura** | Al abrir, filas en `writing` | Marcarlas `failed_local` y pedir retomar solo esa zona. Las filas `pending` sobreviven. |
-| C15 | **Reemplazar una foto buena por una mala** | Recaptura de una zona | La foto anterior no se borra hasta tener la nueva verificada en memoria. Es una diferencia consciente con la app, que borra primero ([traslado_foto_service.dart:49-53](../sum-app/lib/features/traslado/data/traslado_foto_service.dart#L49)). |
+| C15 | **Reemplazar una foto buena por una mala** | Recaptura de una zona | La foto anterior no se borra hasta tener la nueva verificada en memoria. Es una diferencia consciente con la app, que borra primero ([traslado_foto_service.dart:49-53](../../../sum-app/lib/features/traslado/data/traslado_foto_service.dart#L49)). |
 | C16 | **Subida fallida** | PUT con error de red, 403 o `TypeError` | 4 intentos con backoff, máximo 2 renovaciones de la URL firmada (403 = URL vencida). El `Content-Type` del PUT debe ser el mismo que se pidió en `upload-url`. |
 | C17 | **CORS del bucket mal configurado** | `TypeError: Failed to fetch` sin código HTTP (indistinguible de falta de red) | Mensaje con diagnóstico. Se previene con la historia D3 del backlog. |
 | C18 | **Sesión vencida con fotos pendientes** | 401 tras un refresh fallido | Las fotos no se tocan. Se bloquea el envío y se pide iniciar sesión. Al volver, se retoma. |
 | C19 | **Conteo o zonas inválidos** | Distinto de 6 fotos / 6 zonas (salida) o 5 fotos (entrega) | Validar antes de enviar, para no provocar el 422. |
 
-C1 a C8 salen de las tablas de errores del patrón; el catálogo de mensajes de permisos ya existe en el portal ([VinScannerModal.tsx:84-95](../sum-portal-front/src/components/VinScannerModal.tsx#L84)) y se puede reutilizar como texto.
+C1 a C8 salen de las tablas de errores del patrón; el catálogo de mensajes de permisos ya existe en el portal ([VinScannerModal.tsx:84-95](../../../sum-portal-front/src/components/VinScannerModal.tsx#L84)) y se puede reutilizar como texto.
 
 ---
 
@@ -84,7 +88,7 @@ src/
   test/                   # fakes, MSW, fixtures
 ```
 
-Alias `@/*` y Vitest, Playwright y MSW, igual que en el portal. Se activa `strict: true` (el portal lo tiene en `false`, [tsconfig.app.json](../sum-portal-front/tsconfig.app.json)) y `noUncheckedIndexedAccess`.
+Alias `@/*` y Vitest, Playwright y MSW, igual que en el portal. Se activa `strict: true` (el portal lo tiene en `false`, [tsconfig.app.json](../../../sum-portal-front/tsconfig.app.json)) y `noUncheckedIndexedAccess`.
 
 Puertos para poder probar con dobles: `CameraPort`, `FotoStorePort`, `TrasladoApiPort`, `AuthPort`.
 
@@ -126,7 +130,7 @@ Reglas:
 - Una transición no permitida lanza un error de programación (misma idea que `transicionarFoto` en la app). No se ignora en silencio.
 - `suspendida → solicitando` intenta reabrir sin gesto. Si el navegador lo rechaza, muestra el botón de reactivar. No asumo cuál de los dos casos ocurre en iOS: el diseño soporta ambos. *No verificado en dispositivo.*
 - El disparo solo se habilita en `lista`.
-- La tabla implementada tiene cuatro transiciones más que el diagrama: `solicitando`, `iniciando` y `capturando` → `suspendida`, y `suspendida` / `error` → `iniciando`. Ver `src/features/traslado/camera/estadoCamara.ts` y PLAN-SPRINTS.md §2.2.
+- La tabla implementada tiene cuatro transiciones más que el diagrama: `solicitando`, `iniciando` y `capturando` → `suspendida`, y `suspendida` / `error` → `iniciando`. Ver `src/features/traslado/camera/estadoCamara.ts` y plan-sprints.md §2.2.
 
 ### 5.2 Restricciones de captura (recomendación)
 
@@ -178,7 +182,7 @@ flowchart LR
 - Guía visual de la zona activa sobre el video (FRONTAL, LATERAL IZQUIERDO, etc.).
 - Banner de color arriba, nunca modal: ámbar sin conexión, verde listo, rojo error (patrón de la app, `patron-traslado-web.md` §5).
 - Estado de cada foto visible: guardada, subiendo, falló (con botón de reintento).
-- **Diferido (decidido):** la bitácora y el botón «Copiar diagnóstico» quedan fuera del alcance por ahora, junto con cualquier telemetría remota. Si se retoma, la idea era un registro local de códigos de error, tiempos y navegador, sin envío a la red. La app usa Firebase Crashlytics ([main.dart:25-33](../sum-app/lib/main.dart#L25)); el portal y el backend no tienen un equivalente para clientes web (ver §12). Un envío remoto se decide después del testeo.
+- **Diferido (decidido):** la bitácora y el botón «Copiar diagnóstico» quedan fuera del alcance por ahora, junto con cualquier telemetría remota. Si se retoma, la idea era un registro local de códigos de error, tiempos y navegador, sin envío a la red. La app usa Firebase Crashlytics ([main.dart:25-33](../../../sum-app/lib/main.dart#L25)); el portal y el backend no tienen un equivalente para clientes web (ver §12). Un envío remoto se decide después del testeo.
 
 ---
 

@@ -1,7 +1,7 @@
 import { CALIDAD_JPEG, LADO_LARGO_MAXIMO_PX, TIEMPO_CAPTURA_MS } from './config'
 
 /**
- * Captura de un frame del video como JPEG verificado. Ver ARQUITECTURA-FRONT.md §5.3 y las fallas
+ * Captura de un frame del video como JPEG verificado. Ver docs/02-arquitectura/arquitectura-front.md §5.3 y las fallas
  * C7 y C9 a C11.
  *
  * Regla de oro: **una foto se acepta solo si se comprobó**. Nada de lo que falle aquí lanza una

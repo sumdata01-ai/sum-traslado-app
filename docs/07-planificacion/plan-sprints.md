@@ -1,9 +1,11 @@
 # Traslado web — plan de sprints
 
+Última actualización: 2026-10-13 | Fuente: decisiones del usuario, avances por sprint | Estado: vigente
+
 **Para quién:** el equipo que construye el front de Traslado y quien actúa como Product Owner.
 **Fecha:** 2026-10-09.
 **Convención:** *confirmado* sale del código revisado; *propuesta* es recomendación; *a definir* lo decide el equipo.
-**Historias, criterios de aceptación y pruebas:** [BACKLOG.md](BACKLOG.md). **Fallas de captura C1–C19:** [ARQUITECTURA-FRONT.md](ARQUITECTURA-FRONT.md) §2.
+**Historias, criterios de aceptación y pruebas:** [backlog.md](backlog.md). **Fallas de captura C1–C19:** [arquitectura-front.md](../02-arquitectura/arquitectura-front.md) §2.
 
 ---
 
@@ -62,7 +64,7 @@ flowchart LR
 - **Los sprints 2 y 4 dependen de decisiones de otros (D1 y D3).** Si no están cerradas al empezar el sprint, la historia no entra.
 
 ### Spike S-01 — Cámara de iOS al volver de segundo plano
-- **Qué es:** prueba acotada en tiempo para resolver la pregunta abierta de ARQUITECTURA-FRONT.md §5.1: si Safari reabre la cámara sin un toque al volver al primer plano.
+- **Qué es:** prueba acotada en tiempo para resolver la pregunta abierta de arquitectura-front.md §5.1: si Safari reabre la cámara sin un toque al volver al primer plano.
 - **Cuándo:** primeros días del Sprint 1, con un prototipo mínimo (`getUserMedia` + `visibilitychange`) sobre el HTTPS de F-01.
 - **Resultado esperado:** una nota con lo observado en cada dispositivo, que decide si T2-AC4 muestra o no el botón «Tocar para reactivar la cámara». No produce código de producción.
 - **Duración máxima:** *a definir por el equipo*.
@@ -377,7 +379,7 @@ Aprobadas el 2026-10-09, con la condición que indicaste: se mantienen mientras 
 
 | Dependencia | Para qué | Cómo se vería que no sirve |
 |---|---|---|
-| `zod` | Validar el JSON del backend en el borde. El código de la app ya sufrió un cast a `null` que tumbaba toda la lista de órdenes ([traslado_api_http.dart:169-173](../sum-app/lib/features/traslado/data/traslado_api_http.dart#L169)). | Si los esquemas se duplican con los tipos y nadie los mantiene. |
+| `zod` | Validar el JSON del backend en el borde. El código de la app ya sufrió un cast a `null` que tumbaba toda la lista de órdenes ([traslado_api_http.dart:169-173](../../../sum-app/lib/features/traslado/data/traslado_api_http.dart#L169)). | Si los esquemas se duplican con los tipos y nadie los mantiene. |
 | `dexie-react-hooks` | `useLiveQuery`: que la pantalla se actualice sola cuando cambia Dexie. | Si se puede lograr lo mismo con un hook propio de pocas líneas. |
 | `fake-indexeddb` | Probar T4a y T4b sin navegador (solo desarrollo). | Si las pruebas E2E con navegador ya cubren esos casos. |
 

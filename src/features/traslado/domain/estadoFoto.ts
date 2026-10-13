@@ -6,7 +6,7 @@
  * lo resuelve solo). Mezclarlos en un genérico «failed» le impediría a la interfaz saber si ofrecer
  * «reintentar» o «retomar la foto».
  *
- * Valores iguales a `local_traslado_foto.sync_estado` de la app. Ver `patron-traslado-web.md` §2.1.
+ * Valores iguales a `local_traslado_foto.sync_estado` de la app. Ver `docs/01-vision-y-alcance/patron-traslado-web.md` §2.1.
  */
 export const ESTADOS_FOTO = ['writing', 'pending', 'uploaded', 'failed_local', 'failed_upload'] as const
 export type EstadoFoto = (typeof ESTADOS_FOTO)[number]

@@ -1,5 +1,9 @@
 # Traslado: patrón para calcarlo a web
 
+Última actualización: 2026-10-09 (movido a docs/ el 2026-10-13) | Fuente: sum-app y sum-bck-modulos (ramas feature/…) | Estado: vigente como referencia del contrato
+
+> Referencia del contrato del backend y de los estados, leída de las ramas indicadas abajo. Si algo no coincide con el backend desplegado, manda el backend.
+
 **Para quién:** quien construya la versión web del flujo de Traslado en este proyecto, sobre el mismo backend o un contrato equivalente.
 
 **Fecha del análisis:** 2026-10-09.

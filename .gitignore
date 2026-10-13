@@ -15,7 +15,8 @@ test-results
 !.env.example
 *.local
 
-.claude/
+# El skill y la memoria del proyecto (.claude/skills, docs/ai) se versionan; solo lo local no.
+.claude/settings.local.json
 .vscode/*
 !.vscode/extensions.json
 .idea

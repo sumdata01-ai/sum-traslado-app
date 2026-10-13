@@ -6,7 +6,7 @@ import { etiquetaDeOrden, filtrarPorVin, normalizarFiltro, tonoDeOrden } from '.
 const etiqueta = (estadoServidor: string, estadoLocal: EstadoOrdenLocal | null, fotosTomadas = 0) =>
   etiquetaDeOrden({ estadoServidor, estadoLocal, fotosTomadas })
 
-describe('AC2 · etiquetas (patron-traslado-web.md §5)', () => {
+describe('AC2 · etiquetas (docs/01-vision-y-alcance/patron-traslado-web.md §5)', () => {
   it.each([
     ['sinIniciar', 'Sin empezar'],
     ['listaParaEnviar', 'Listo para enviar'],

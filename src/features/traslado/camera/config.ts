@@ -1,6 +1,6 @@
 /**
  * Valores de la captura en un solo lugar: la resolución se valida en el testeo (P-01) y tiene que
- * poder cambiarse sin tocar la lógica. Ver ARQUITECTURA-FRONT.md §5.2 y §5.3.
+ * poder cambiarse sin tocar la lógica. Ver docs/02-arquitectura/arquitectura-front.md §5.2 y §5.3.
  */
 
 /** Resolución pedida al stream. Un frame del video tiene la del *track*, no la del sensor. */

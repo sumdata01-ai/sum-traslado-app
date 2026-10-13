@@ -2,7 +2,7 @@ import type { EstadoOrdenLocal } from './estadoOrden'
 import { totalZonas } from './zonas'
 
 /**
- * Cómo se ve una orden en la lista: su etiqueta y su tono. Ver `patron-traslado-web.md` §5 y
+ * Cómo se ve una orden en la lista: su etiqueta y su tono. Ver `docs/01-vision-y-alcance/patron-traslado-web.md` §5 y
  * `_OrdenVista` de la app.
  *
  * El mismo estado derivado se lee distinto según el tramo: `sinIniciar` en una orden `pendiente`

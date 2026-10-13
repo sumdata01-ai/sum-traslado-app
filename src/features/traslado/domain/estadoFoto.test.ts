@@ -10,7 +10,7 @@ import {
   transicionarFoto,
 } from './estadoFoto'
 
-// Fuente: patron-traslado-web.md §2.1 y `_transicionesFoto` de traslado_estado.dart.
+// Fuente: docs/01-vision-y-alcance/patron-traslado-web.md §2.1 y `_transicionesFoto` de traslado_estado.dart.
 const PERMITIDAS: ReadonlyArray<readonly [EstadoFoto, EstadoFoto]> = [
   ['writing', 'pending'],
   ['writing', 'failed_local'],
