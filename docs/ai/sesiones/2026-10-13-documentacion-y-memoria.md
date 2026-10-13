@@ -40,7 +40,8 @@ Verificaciones de la sesión que no se repitieron al cierre:
 - Mutación del aviso de orden ya tomada: 17 comportamientos rotos a propósito, 16 detectados a la primera y 1 no (la lectura de `fecha_entrega`); se añadió la prueba y se detecta.
 - Consulta de solo lectura al backend **local** con dos VIN reales (`/vin` responde 200 con `ordenes: []`).
 
-**No verificado (y a confirmar):** que `localhost:8050` use la base de **desarrollo**; ver [discrepancias.md](../discrepancias.md) #11.
+**Confirmado por el usuario:** `localhost:8050` apunta a la base local porque él fija las variables de entorno al arrancar (por defecto lee producción); ver [discrepancias.md](../discrepancias.md) #11.
+- **No verificado:** la prueba en Chrome del aviso contra el backend nuevo (se hará en producción tras el despliegue).
 - 
 - El aviso de orden ya tomada con datos reales: el servidor todavía no manda `otras_ordenes`.
 - La galería (HEIC, fotos grandes) y el escáner con una etiqueta real, en iPhone y en Android.

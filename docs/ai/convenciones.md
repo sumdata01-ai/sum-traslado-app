@@ -33,6 +33,7 @@
 - El login admite 10 por minuto: no encadenar E2E.
 - **Un VIN «que la app sí encuentra» y la página no:** `/vin` y `buscar` solo ven órdenes `pendiente`. Si la orden está en tránsito, entregada o cancelada, el servidor responde `ordenes: []` y la página dice «Sin orden pendiente». Antes de tocar código, pedir el estado real (portal del supervisor) y el entorno de cada lado; la página ya sabe leer `otras_ordenes` cuando el servidor lo mande.
 - **Un resultado del backend de desarrollo caduca:** las órdenes cambian mientras se trabaja (un conteo pasó de 46 a 42 en minutos). Repetir la consulta antes de concluir.
+- **`localhost:8050` por defecto lee producción:** el usuario lo apunta a la base local con variables de entorno al arrancarlo. La API no dice a qué base apunta, así que antes de correr pruebas que toman o sueltan órdenes (`*.backend.test.ts`, E2E) hay que estar seguro de cómo se levantó; ante la duda, solo consultas de lectura.
 - **`npm test` cambia con el backend:** con el backend local activo corren las pruebas `*.backend.test.ts` (antes omitidas) y toman y sueltan una orden de la base de desarrollo. Comprobar después que no quedó nada tomado.
 - Vite sirve `/api` y `/mobile` al backend: ninguna ruta de la app puede empezar así.
 - Al mover un `.md`, actualizar los comentarios del código que lo citan (hay citas con número de sección).
