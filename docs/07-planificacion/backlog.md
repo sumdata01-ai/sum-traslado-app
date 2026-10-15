@@ -1,6 +1,6 @@
 # Backlog — Traslado web
 
-Última actualización: 2026-10-13 | Fuente: decisiones del usuario y pruebas por historia | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: decisiones del usuario y pruebas por historia | Estado: vigente
 
 **Para quién:** el equipo que construye la versión web de Traslado.
 **Fecha:** 2026-10-09.
@@ -50,6 +50,7 @@
 | E4 Envío | Subida, confirmación, drenador, sesión vencida | Must (E4-03 y E4-04: Should) |
 | E5 Testeo | Pruebas en dispositivos reales | Must |
 | E6 Topología y despliegue | D1, D2, D3 | Pendiente (ver al final) |
+| E7 Seguimiento del coordinador | C-00 (web, hecha), C-01 consulta masiva de VIN (web y backend, hechas en ramas), B-01 (backend, hecho en una rama, sin enviar) | Pedida el 2026-10-15 |
 
 ---
 
@@ -370,6 +371,45 @@ Como equipo, quiero comprobar la captura en teléfonos reales, para validar lo q
 - **Pruebas:** [M] matriz completa. No se fija una tasa objetivo de fallos de cámara hasta tener datos.
 
 ---
+
+## E7 — Seguimiento del coordinador *(añadida el 2026-10-15, pedida por el usuario)*
+
+Una segunda audiencia: el rol `coordinador` ve, **solo en esta web**, todos los traslados que genera Traslado. Solo lectura, **sin mapa y sin PDI** en este MVP, entra **por rol** y sin filtro por destino. Mapeo: [mapeo-rol-coordinador.md](mapeo-rol-coordinador.md). Contrato y pedido: [pedido-backend-seguimiento-coordinador.md](pedido-backend-seguimiento-coordinador.md). Funcional: [propuesta-vista-cliente.md](../01-vision-y-alcance/propuesta-vista-cliente.md).
+
+### C-00 Seguimiento de los traslados · Tamaño L · *Depende de B-01*
+**Estado (2026-10-15):** hecha en código y probada con servidores falsos (Vitest y Playwright en Chrome y Edge); **el rol y el endpoint no existen en el backend**, así que no se probó con datos reales.
+
+Como coordinador, quiero ver todos los traslados con su etapa y los hitos registrados, para saber qué vehículos salieron, cuáles van en camino y cuáles se entregaron.
+
+- **AC1.** Given un usuario con rol `coordinador`, When inicia sesión, Then ve la vista de seguimiento, **aunque su `allowed_apps` esté vacío o incluya `traslado`**.
+- **AC2.** Given un usuario que no es coordinador, When inicia sesión, Then todo sigue como hoy: la home con `traslado`, «Sin acceso» sin él. Un rol que solo se parece («Coordinador») no cuenta.
+- **AC3.** Given la lista, When se pinta, Then cada vehículo tiene una etapa con texto (En planta, En camino, Entregado, Anulado), y se ordena: en camino (lo más reciente arriba), en planta, entregados, anulados.
+- **AC4.** Given las pestañas, Then son **Todos, En camino y Entregados**; «Todos» muestra también lo que está en planta. **Las órdenes anuladas no se muestran** (cambiado el 2026-10-15, a pedido del usuario; antes se mostraban con «Comunícate con SUM»): la web las descarta aunque el servidor las mande.
+- **AC5 — Sin GPS** *(decidido el 2026-10-15, a pedido del usuario; reemplaza al AC5 anterior)*. Given cualquier pantalla de la vista (lista, tabla, detalle, consulta masiva), Then **no se muestra nada de GPS**: ni ubicación, ni «en vivo» o «última ubicación», ni si el traslado lleva un dispositivo, ni «seguimiento satelital». La tabla tiene tres columnas (Vehículo, Destino, Etapa) y el detalle solo trae el vehículo, el destino, la etapa y los hitos. La web no lee el campo `seguimiento` aunque el servidor lo mande.
+- **AC6.** Given el detalle, Then muestra «Salida registrada» y «Entrega» con fecha en hora de Lima, y «—» (con texto para lector de pantalla) donde no hay registro; una entrega con hora estimada muestra solo la fecha y «Hora no disponible».
+- **AC7.** Given el teléfono (360 px), Then hay una lista continua y el detalle a pantalla completa, sin desborde horizontal; en pantalla ancha, una tabla a todo lo ancho y el detalle en un panel a la derecha que se abre con «Ver detalle» (cambiado el 2026-10-15: debajo de la tabla quedaba lejos con muchos vehículos). El VIN se muestra completo; las pestañas llevan su conteo; la pantalla dice «Última actualización: HH:MM» (hora de Lima).
+- **AC8.** Given la pantalla, Then no muestra conductor, velocidad, fotos ni mapa.
+- **AC9.** Given un 403 del servidor, Then se ve «Sin permiso para ver el seguimiento» con el mensaje del servidor y **no se cierra la sesión**; sin red se sigue viendo lo último recibido con un aviso; un fallo nunca vacía la lista.
+- **AC10.** Given que se cierra la sesión o entra otra persona, Then no queda nada de la anterior en memoria; los datos **no se guardan en el navegador**.
+- **AC11 — Consulta masiva de VIN** *(pedida el 2026-10-15)*. Given el botón «Consulta masiva de VIN», When se abre, Then hay un cuadro para pegar los VIN (uno por línea o separados por coma, punto y coma, espacio o tabulador; sirve copiar una columna de Excel), «Consultar» y «Limpiar», y no se ven la lista ni sus filtros.
+- **AC12.** Given lo pegado, Then antes de consultar se dice cuántos VIN son, que los repetidos se consultan una vez, cuáles no tienen forma de VIN (17 letras y números, sin I, O ni Q; no se consultan) y, si pasan de **200**, cuántos sobran (no se puede consultar).
+- **AC13.** Given una consulta, Then cada VIN sale **en el orden pegado**: si su orden **más reciente entre las que están en tránsito o ya entregadas** existe (de cualquier fecha, sin ventana de días), se ve como en la lista (vehículo, destino, etapa, seguimiento, fecha, «Ver detalle»); **todo lo demás** —sin orden, orden que aún no sale, orden cancelada— sale como **«Pendiente de información»** con «Aún no está en el plan de despacho.», sin distinguir esos casos.
+- **AC14.** Given el resultado, Then se resume («4 VIN consultados: 2 con información y 2 pendientes de información.»); lo anulado nunca se enseña; un fallo (sin red, 403, 5xx) se dice con qué hacer y **no borra** el último resultado; «Limpiar» lo borra todo; el resultado vive solo en memoria.
+- **AC15.** Given «Ver detalle» de un resultado, Then se abre el mismo panel de detalle que en la lista.
+- **AC16.** Given el panel de detalle, Then el vehículo, el destino, la etapa y los hitos se ven en tamaño grande (el panel ocupa el ancho en el teléfono y 560 px en pantalla grande); al abrirlo nada de la página de atrás se corre; «Cerrar» muestra su contorno completo al recibir el foco.
+- **AC11.** Given la vista, Then la lista se pide **una vez al abrir** y después **solo con el botón «Actualizar»**: no hay renovación automática (ni por tiempo, ni al volver a la pestaña, ni al volver la red). Cambiado el 2026-10-15: el usuario no la pidió. «Última actualización: HH:MM» dice cuándo llegó la última lista.
+- **Decisiones del usuario (2026-10-15):** rol `coordinador` (no `cliente`, que es el auditor de inspecciones); acceso por rol y no por `allowed_apps`; coordinador general sin filtro por destino; solo web, sin cambios en Flutter; el PDI no entra en este MVP; campos visibles como en la propuesta (sin conductor, velocidad ni fotos).
+- **Pruebas:** [U] dominio (fechas en Lima, hitos, filtros), API y esquemas, controlador; [C] página y componentes con axe; [I] acceso por rol en `App`; [E] `e2e/seguimiento.spec.ts` con las respuestas simuladas.
+- **Pendiente:** probarla en un teléfono real, y con el backend cuando exista.
+
+### B-01 El rol `coordinador` y el endpoint de seguimiento · *Backend, sin hacer*
+Ver [pedido-backend-seguimiento-coordinador.md](pedido-backend-seguimiento-coordinador.md): `coordinador` en `ROLES_VALIDOS`, `GET /api/seguimiento/traslados` con guard por rol, lista cerrada de campos, sin llamar al proveedor de GPS. **Bloquea** probar C-00 con datos reales.
+
+### Fases posteriores (no incluidas)
+- **C-03** Mapa con la posición y la estela de un vehículo con GPS.
+- **C-04** Hito «PDI terminado» (necesita ligar el PDI a la orden).
+- **C-05** Filtro por destino y roles para externos (tabla usuario → destino); hoy el rol solo debe darse a personal de SUM.
+- Logos de marca (hoy una inicial neutra) cuando se confirmen las marcas y el permiso de uso.
 
 ## E6 — Topología y despliegue (PENDIENTE)
 

@@ -7,6 +7,7 @@ Punto de entrada del repositorio: [README.md](../README.md). Memoria para sesion
 ## 01 · Visión y alcance
 - [vision-y-alcance.md](01-vision-y-alcance/vision-y-alcance.md): qué es, qué hace hoy y endpoints que usa.
 - [patron-traslado-web.md](01-vision-y-alcance/patron-traslado-web.md): contrato de datos y desenlaces (referencia, del 2026-10-09).
+- [propuesta-vista-cliente.md](01-vision-y-alcance/propuesta-vista-cliente.md): propuesta (borrador) de una vista para que el cliente siga sus vehículos: PDI, en camino, GPS y ubicación.
 
 ## 02 · Arquitectura
 - [vision-general.md](02-arquitectura/vision-general.md): contexto, contenedores y capas.
@@ -39,12 +40,15 @@ Punto de entrada del repositorio: [README.md](../README.md). Memoria para sesion
 [0007 HTTPS con mkcert](06-decisiones/0007-https-local-con-mkcert.md) ·
 [0008 no tocar producción](06-decisiones/0008-no-tocar-produccion.md) ·
 [0009 Vercel contra producción](06-decisiones/0009-vercel-contra-produccion-solo-para-ver.md) ·
-[0010 galería y escáner](06-decisiones/0010-galeria-y-escaner-con-jpeg-verificado.md)
+[0010 galería y escáner](06-decisiones/0010-galeria-y-escaner-con-jpeg-verificado.md) ·
+[0011 vista del coordinador](06-decisiones/0011-vista-del-coordinador-por-rol-solo-lectura-y-en-memoria.md)
 
 ## 07 · Planificación
 - [estado-actual.md](07-planificacion/estado-actual.md): resumen y fuente de cada cosa.
 - [backlog.md](07-planificacion/backlog.md) · [plan-sprints.md](07-planificacion/plan-sprints.md) · [TODO.md](../TODO.md) (lista viva)
 - [pedido-backend-vin-otras-ordenes.md](07-planificacion/pedido-backend-vin-otras-ordenes.md): pedido al backend para decir que una orden ya salió.
+- [pedido-backend-seguimiento-coordinador.md](07-planificacion/pedido-backend-seguimiento-coordinador.md): pedido al backend: el rol `coordinador` y el endpoint de seguimiento (contrato contra el que está construida la web).
+- [mapeo-rol-coordinador.md](07-planificacion/mapeo-rol-coordinador.md): mapeo del rol `coordinador` y de su acceso a la vista de seguimiento (cruza backend, portal, app y esta web).
 
 ## Memoria para LLM (`docs/ai/`)
 - [contexto-proyecto.md](ai/contexto-proyecto.md) · [convenciones.md](ai/convenciones.md) · [comandos.md](ai/comandos.md) · [glosario.md](ai/glosario.md) · [discrepancias.md](ai/discrepancias.md)

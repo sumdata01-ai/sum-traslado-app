@@ -1,6 +1,6 @@
 # Convenciones para trabajar con un LLM en este proyecto
 
-Última actualización: 2026-10-13 | Fuente: docs/04-calidad/convenciones-codigo.md, decisiones del usuario | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: docs/04-calidad/convenciones-codigo.md, decisiones del usuario | Estado: vigente
 
 ## Cómo trabajar
 - **Hacer solo lo pedido.** No editar archivos que no se pidieron. El usuario lo corrigió en la sesión inicial («yo no pedí editar algo»).
@@ -33,7 +33,7 @@
 - El login admite 10 por minuto: no encadenar E2E.
 - **Un VIN «que la app sí encuentra» y la página no:** `/vin` y `buscar` solo ven órdenes `pendiente`. Si la orden está en tránsito, entregada o cancelada, el servidor responde `ordenes: []` y la página dice «Sin orden pendiente». Antes de tocar código, pedir el estado real (portal del supervisor) y el entorno de cada lado; la página ya sabe leer `otras_ordenes` cuando el servidor lo mande.
 - **Un resultado del backend de desarrollo caduca:** las órdenes cambian mientras se trabaja (un conteo pasó de 46 a 42 en minutos). Repetir la consulta antes de concluir.
-- **`localhost:8050` por defecto lee producción:** el usuario lo apunta a la base local con variables de entorno al arrancarlo. La API no dice a qué base apunta, así que antes de correr pruebas que toman o sueltan órdenes (`*.backend.test.ts`, E2E) hay que estar seguro de cómo se levantó; ante la duda, solo consultas de lectura.
-- **`npm test` cambia con el backend:** con el backend local activo corren las pruebas `*.backend.test.ts` (antes omitidas) y toman y sueltan una orden de la base de desarrollo. Comprobar después que no quedó nada tomado.
-- Vite sirve `/api` y `/mobile` al backend: ninguna ruta de la app puede empezar así.
+- **`localhost:8050` puede leer producción:** el usuario dice que por defecto lo hace y que lo apunta a local con variables de entorno, pero sus datos coincidieron con los de producción hasta el milisegundo. La API no dice a qué base apunta. **No correr `npm test` con ese backend encendido** (ejecuta las pruebas `*.backend.test.ts`, que toman y sueltan una orden): usar el comando que las excluye ([comandos.md](comandos.md)). Ante la duda, solo consultas de lectura.
+- **`npm test` cambia con el backend:** con el backend local activo corren las pruebas `*.backend.test.ts` (antes omitidas), que toman y sueltan una orden. Por lo anterior, se evita con el backend encendido; si se corrió, comprobar después que no quedó nada tomado.
+- Vite sirve `/api` y `/mobile` al backend: ninguna ruta de la app puede empezar así. **Al revés también:** una llamada nueva al backend debe empezar por `/api` o `/mobile`; el resto (por ejemplo `/v1/...`, que es como el backend monta sus routers) no se reenvía y llegaría a `index.html` ([discrepancias.md](discrepancias.md) #12).
 - Al mover un `.md`, actualizar los comentarios del código que lo citan (hay citas con número de sección).

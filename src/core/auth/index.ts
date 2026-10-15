@@ -1,5 +1,5 @@
 export type { AuthPort, EstadoSesion, InstantaneaSesion, ResultadoLogin, Sesion } from './AuthPort'
 export { AuthCookie, type AlmacenLike, type OpcionesAuthCookie } from './authCookie'
 export { type CanalSesion, type MensajeSesion, canalDelNavegador, canalMudo } from './canalSesion'
-export { APP_TRASLADO, tieneAcceso } from './sesion'
+export { APP_TRASLADO, ROL_COORDINADOR, esCoordinador, tieneAcceso } from './sesion'
 export { useSesion } from './useSesion'

@@ -1,6 +1,6 @@
 # Estado y datos
 
-Última actualización: 2026-10-13 | Fuente: src/features/traslado/data/, src/features/traslado/api/, src/core/http/ | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: src/features/traslado/data/, src/features/traslado/api/, src/features/seguimiento/, src/core/http/ | Estado: vigente
 
 ## Patrón de estado: stores externos
 
@@ -14,6 +14,7 @@ No hay librería de estado. Cada controlador de `data/` es una clase que expone 
 | `FormularioCaptura` | Las fotos de un momento de una orden y su estado de subida. |
 | `SubidaFotos` | Sube cada foto a GCS, de una en una por foto. |
 | `ConfirmacionTraslado` | «Confirmar salida» y «Confirmar entrega». |
+| `ListaSeguimiento` | La lista del coordinador (`features/seguimiento`): **solo en memoria, sin Dexie**. Una petición a la vez, no vacía lo mostrado ante un fallo, un 403 vacía y muestra «sin permiso», y se vacía al cerrar sesión o si entra otra persona (`iniciar(idUsuario)`). Hook `useListaSeguimiento`: pide la lista **una sola vez al abrir** y no vuelve a pedir nada por su cuenta (ni por tiempo, ni al volver a la pestaña, ni al volver la red); solo el botón «Actualizar». |
 
 ## Datos locales (Dexie, base `sum-traslado`, versión 5)
 
@@ -35,6 +36,8 @@ No hay librería de estado. Cada controlador de `data/` es una clase que expone 
 - `createApiClient({ getToken, refreshSession, limpiarSesion })` agrega el token, renueva ante un 401 (una sola renovación a la vez) y traduce los fallos a `ApiError` (`isNetwork`, `status`, `message`).
 - Las respuestas se **validan con zod** (`api/schemas.ts`). Un cuerpo que no cumple el contrato es un error 502, no un éxito; una orden mala se descarta y se cuenta, sin vaciar la lista.
 - `crearTrasladoApi(cliente)` pasa siempre la política de 403 de Traslado (`OPCIONES_TRASLADO`); una prueba de guarda lo comprueba para cada función de esa API.
+
+- `crearSeguimientoApi(cliente)` (`GET /api/seguimiento/traslados`) también pasa `cerrarSesionEn403: false` (`OPCIONES_SEGUIMIENTO`, con su prueba de guarda). **Ese endpoint todavía no existe en el backend**: el contrato es el de [pedido-backend-seguimiento-coordinador.md](../07-planificacion/pedido-backend-seguimiento-coordinador.md) y solo se probó contra servidores falsos. Esta web solo reenvía `/api` y `/mobile`: por eso el prefijo no es `/v1`.
 
 ## Qué se sabe del lado del servidor
 

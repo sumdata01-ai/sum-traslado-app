@@ -1,6 +1,6 @@
 # Comandos verificados
 
-Última actualización: 2026-10-13 | Fuente: package.json, playwright.config.ts, sesiones de trabajo | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: package.json, playwright.config.ts, sesiones de trabajo | Estado: vigente
 
 Todos salen de `package.json` o se usaron en las sesiones de trabajo. Se ejecutan en la raíz del proyecto.
 
@@ -12,11 +12,14 @@ Todos salen de `package.json` o se usaron en las sesiones de trabajo. Se ejecuta
 | Previsualizar el build | `npm run preview` · `npm run preview:https` |
 | Lint | `npm run lint` |
 | Tipos | `npm run typecheck` |
-| Pruebas (una pasada) | `npm test` |
+| Pruebas (una pasada) | `npm test` (**con el backend `:8050` encendido ejecuta también las pruebas contra el backend real**; ver la fila siguiente) |
+| Pruebas **sin** las del backend real | `npx vitest run --exclude "**/*.backend.test.ts"` (lo seguro con `:8050` encendido) |
 | Pruebas en observación | `npm run test:watch` |
 | Una prueba o carpeta | `npx vitest run src/features/traslado/domain/vin` |
 | E2E (todas) | `npm run test:e2e` (puede pasar el límite de logins) |
 | Un archivo E2E en Chrome | `npx playwright test e2e/home.spec.ts --project=chrome` |
+| E2E **sin backend** (vista del coordinador; segura con `:8050` encendido, no gasta logins) | `npx playwright test e2e/seguimiento.spec.ts --project=chrome` (o `edge`); añade `--headed` para verla en pantalla |
+| Capturas de esa E2E | Con la variable `SEGUIMIENTO_CAPTURAS=<carpeta fuera del repositorio>` antes del comando |
 | Dependencias instaladas | `npm install` |
 
 ## Antes de entregar un cambio
