@@ -1,6 +1,6 @@
 # Estado actual
 
-Última actualización: 2026-10-13 (cierre de sesión) | Fuente: TODO.md, docs/07-planificacion/backlog.md, plan-sprints.md | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: TODO.md, docs/07-planificacion/backlog.md, plan-sprints.md | Estado: vigente
 
 > La lista viva y el registro de avances están en [TODO.md](../../TODO.md). Este documento solo resume y dice **qué documento es la fuente de cada cosa**.
 
@@ -14,16 +14,17 @@
 
 > Hay solapamiento entre `plan-sprints.md` (§2.1 a §2.3, avances) y el «Registro de avances» de `TODO.md`. Hoy no se reconcilian: ver [discrepancias.md](../ai/discrepancias.md).
 
-## Resumen al 2026-10-13
+## Resumen al 2026-10-15
 
 | Estado | Historias |
 |---|---|
 | Hecha en código y con pruebas | Fundaciones, login con cookie (A-02), una sola sesión entre pestañas (A-03), home (O-01), tomar y soltar (O-02), identificar VIN (O-03), placa y proveedor (O-04, O-04b), subida de fotos (E4-01), confirmar salida y entrega (E4-02), foto de la galería (T12), escáner de VIN (O-05). |
+| Hecha en código, **sin backend** | Vista de seguimiento del rol `coordinador` (E7, C-00): todos los traslados, solo lectura, sin mapa ni PDI; entra por rol. Probada con servidores falsos (Vitest, y Playwright en Chrome y Edge). **El rol y el endpoint no existen todavía en el backend**: ver [pedido-backend-seguimiento-coordinador.md](pedido-backend-seguimiento-coordinador.md) y [mapeo-rol-coordinador.md](mapeo-rol-coordinador.md). |
 | Probado en iPhone (iOS 26.5, desde Vercel) | Página carga con HTTPS válido; las fotos sobreviven a cerrar sesión y la app; la sesión sobrevive a recargar; la cámara vuelve sola tras bloquear o cambiar de app. |
 | Falta en teléfono | JPEG y tamaño de la foto, 360 px, permisos denegados, galería (HEIC, fotos grandes), escáner con una etiqueta real, y todo en Android. |
-| Bloqueado por terceros | Subir y confirmar de verdad: el backend local firma URLs del bucket de **producción**; hace falta un bucket y backend de desarrollo, y el CORS del origen de Vercel. Datos de prueba en el backend. |
-| Esperando al backend | `otras_ordenes` en `/vin/{vin}`: sin él, el VIN de una orden que otra persona ya sacó dice «Sin orden pendiente». La página ya está preparada. Ver [pedido-backend-vin-otras-ordenes.md](pedido-backend-vin-otras-ordenes.md). |
-| Sin commitear | Todo lo de la sesión del 2026-10-13: `docs/`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`, el skill y el aviso de orden ya tomada (último commit `8de83a7`). |
+| Bloqueado por terceros | **Seguimiento del coordinador con datos reales:** falta el rol `coordinador` y `GET /api/seguimiento/traslados` en el backend, y que se cierren los endpoints que solo exigen sesión antes de dar cuentas reales. Subir y confirmar de verdad: el backend local firma URLs del bucket de **producción**; hace falta un bucket y backend de desarrollo, y el CORS del origen de Vercel. Datos de prueba en el backend. |
+| Hecho en producción | Aviso de orden ya tomada: el backend ya manda `otras_ordenes` y la página desplegada muestra «Orden ya tomada el 13/10, 10:38» (probado en solo lectura el 2026-10-13). Detalle y puntos abiertos en [pedido-backend-vin-otras-ordenes.md](pedido-backend-vin-otras-ordenes.md). |
+| A confirmar | A qué base apunta `localhost:8050` (puede leer producción). Mientras tanto no se corren pruebas que escriban contra él. Ver [discrepancias.md](../ai/discrepancias.md) #11. |
 | Descartado | E4-03 y E4-04 (cola automática y sesión vencida con fotos pendientes). |
 | Pendiente (P-01) | Validación de resolución y calidad con operarios; necesita el entorno público (D2) y las pruebas de teléfono. |
 

@@ -1,6 +1,6 @@
 # Glosario
 
-Última actualización: 2026-10-13 | Fuente: docs/01-vision-y-alcance/patron-traslado-web.md, código en src/features/traslado/domain/ | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: docs/01-vision-y-alcance/patron-traslado-web.md, código en src/features/traslado/domain/ y src/features/seguimiento/domain/ | Estado: vigente
 
 | Término | Significado |
 |---|---|
@@ -23,5 +23,8 @@
 | **Ejecución** | Registro en el servidor de un intento de salida o entrega, con sus fotos. |
 | **Dueño (de los datos locales)** | El usuario al que pertenecen las tomas, elecciones y caché guardadas en el navegador. |
 | **Época (de sesión)** | Contador que descarta resultados de una renovación hecha con una sesión anterior (A-03). |
+| **Coordinador** | Rol (`role: "coordinador"`) que ve el seguimiento de **todos** los traslados, solo lectura y solo en esta web. Entra **por rol**, no por `allowed_apps`. No es el rol `cliente` del portal (auditor de inspecciones). El rol aún no existe en el backend. |
+| **Seguimiento** | La vista del coordinador (`SeguimientoPage`, `features/seguimiento`): etapa y hitos de cada traslado. **Sin nada de GPS** (ni ubicación ni si lleva dispositivo), sin mapa, sin PDI y sin órdenes anuladas. |
+| **Etapa** | En el lenguaje del coordinador: `en_planta`, `en_camino`, `entregado`, `anulado`. La traduce el servidor desde el estado de la orden. |
 | **D1, D2, D3** | Decisiones externas del plan: D1 forma de login (cookie), D2 entorno público con HTTPS, D3 CORS del bucket. |
 | **S-01, R2** | Spike de la cámara de iOS al volver de segundo plano; riesgo de que las fotos no sobrevivan a una recarga. Ambos superados en iPhone. |

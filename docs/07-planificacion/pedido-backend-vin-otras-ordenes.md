@@ -1,6 +1,19 @@
 # Pedido al backend: decir qué pasó con un VIN cuya orden ya no está pendiente
 
-Última actualización: 2026-10-13 | Fuente: `sum-bck-modulos` (`app/api/mobile/traslado.py`, `app/services/traslado_service.py`, `app/repositories/traslado_repository.py`), pruebas contra el backend local | Estado: pedido abierto (la página ya está preparada)
+Última actualización: 2026-10-13 | Fuente: `sum-bck-modulos` (`app/api/mobile/traslado.py`, `app/services/traslado_service.py`, `app/repositories/traslado_repository.py`), pruebas contra el backend local | Estado: **implementado y desplegado en producción (2026-10-13)**; quedan tres puntos abiertos (ver abajo)
+
+## Resultado (2026-10-13)
+
+El backend lo implementó (rama `feat/vin-otras-ordenes`, ya en `main` y desplegado) y se comprobó en producción con un usuario de prueba de rol `operario`, en solo lectura. **Diferencias con lo pedido más arriba:**
+
+- `estado` solo puede ser `en_transito`, `realizado` o `cerrada`: las **`cancelada` quedan fuera** a propósito (no son un viaje y desplazaban el límite de 3). La página soporta el estado pero nunca lo recibe.
+- `fecha_salida` es el instante en que se **confirmó la salida en la app**, no el de cruzar la puerta de planta.
+- Las 3 más recientes por salida, sin filtrar por quien pregunta. `ordenes` no cambia.
+
+**Puntos abiertos**
+1. **Fecha de entrega estimada:** en las 6 órdenes cerradas a mano, `fecha_entrega` es salida + 2 h; la página diría «se entregó el…» con una hora inventada. El contrato no lo distingue.
+2. **Nombre y DNI:** `nombre_completo` cae a `username` (el DNI) si el usuario no tiene nombre.
+3. **`buscar?q=`** sigue filtrando por `pendiente`: un VIN parcial de una orden ya salida diría «Ningún vehículo coincide».
 
 ## El problema
 
@@ -77,7 +90,7 @@ El repositorio necesitaría una consulta tipo `ordenes_no_pendientes_por_vin(vin
 - VIN sin ninguna: `otras_ordenes: []`.
 - La respuesta anterior sigue cumpliendo el contrato de `sum-app` (`ordenes` sin cambios).
 
-## Lo que ya está hecho en la página
+## Lo que hace la página
 
 `api/schemas.ts` lee `otras_ordenes` **si llega** (una mal formada se salta; la ausencia del campo equivale a vacío), `IdentificadorVin` produce el resultado `yaTomada` y `BuscarEnElSistema` muestra:
 

@@ -1,9 +1,11 @@
 # Contexto del proyecto (resumen denso)
 
-Última actualización: 2026-10-13 | Fuente: package.json, src/, docs/ | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: package.json, src/, docs/ | Estado: vigente
 
 ## Qué es
 Front web de **Traslado** de SUM Vehículos: el operario toma una orden, fotografía la **salida** (6 zonas) y la **entrega** (5 zonas) y confirma cada momento. Mismos endpoints `/mobile/*` que la app móvil (`sum-app`, Flutter) sobre el backend `sum-bck-modulos`. iPhone (Safari) y Android (Chrome). Sin PWA. **Solo con internet.**
+
+**Segunda audiencia (2026-10-15):** el rol **`coordinador`** ve, solo en esta web, el seguimiento de **todos** los traslados (`SeguimientoPage`, `features/seguimiento`): solo lectura, solo en memoria, sin mapa ni PDI, entra **por rol** y no por `allowed_apps`. El backend aún no tiene el rol ni el endpoint: ver [pedido-backend-seguimiento-coordinador.md](../07-planificacion/pedido-backend-seguimiento-coordinador.md).
 
 ## Stack
 Vite 8 · React 19 · TypeScript ~6 estricto · Tailwind 4 · Dexie 4 (IndexedDB) · zod 4 · `@zxing/browser` (carga bajo demanda) · Vitest 4 + Testing Library + vitest-axe + fake-indexeddb · Playwright (Chrome y Edge instalados) · Vercel.

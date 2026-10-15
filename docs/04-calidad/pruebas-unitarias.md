@@ -1,8 +1,8 @@
 # Pruebas unitarias y de componentes (Vitest)
 
-Última actualización: 2026-10-13 | Fuente: vite.config.ts, src/test/setup.ts, archivos *.test.ts(x) | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: vite.config.ts, src/test/setup.ts, archivos *.test.ts(x) | Estado: vigente
 
-A 2026-10-13: **1443 pruebas en 67 archivos** (`npm test`).
+A 2026-10-15: **1608 pruebas en 73 archivos** (`npx vitest run --exclude "**/*.backend.test.ts"`, sin las del backend real). La vista de seguimiento aporta 125 pruebas en 6 archivos (`features/seguimiento/**`, `app/SeguimientoPage.test.tsx`, `app/App.seguimiento.test.tsx`). Las de dominio de fechas fijan la zona horaria (`process.env.TZ`) para no depender de la máquina.
 
 ## Qué hay
 
@@ -30,7 +30,7 @@ Viven en carpetas `testing/` junto al código (`core/auth/testing`, `camera/test
 
 Para comprobar que las pruebas detectan fallos reales, se **rompe a propósito** el comportamiento nuevo y se confirma que alguna prueba falla:
 
-1. Un script copia el archivo a `.bak`, aplica la rotura, corre las pruebas relacionadas y restaura el original.
+1. Un script copia el archivo (mejor a una carpeta temporal **fuera del repositorio**; así no queda ningún `.bak`), aplica la rotura, corre las pruebas relacionadas y restaura el original, comprobando que quedó igual. Antes de romper nada, la línea base debe estar verde.
 2. Un comportamiento cuya rotura **no** hace fallar ninguna prueba es un hueco: se escribe la prueba y se repite.
 3. **No editar `src/` mientras el script corre** y comprobar al final que no quedan archivos `.bak` (`find src -name "*.bak"`).
 

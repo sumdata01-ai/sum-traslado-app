@@ -1,6 +1,6 @@
 # Visión y alcance
 
-Última actualización: 2026-10-13 | Fuente: README.md, docs/07-planificacion/backlog.md, código en src/ | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: README.md, docs/07-planificacion/backlog.md, código en src/ | Estado: vigente
 
 ## Qué es
 
@@ -19,6 +19,7 @@
 | Búsqueda | Filtro local, búsqueda en el sistema por VIN parcial o exacto y **escáner de QR y código de barras** (O-05). |
 | Captura | Cámara dentro de la página o **foto de la galería** (T12), vista previa «Usar / Repetir», una ficha por zona. |
 | Envío | Cada foto se **sube a GCS al tomarla** (con «Reintentar» por foto) y «Confirmar salida» / «Confirmar entrega» registra el despacho. |
+| Seguimiento (rol `coordinador`) | Una vista de **solo lectura** con todos los traslados que genera Traslado: etapa (en planta, en camino, entregado, anulado), si llevan GPS y los hitos registrados. Buscador, destino y pestañas. **Sin mapa y sin PDI** en este MVP. Entra **por rol**, sin filtro por destino. Solo en esta web. Detalle: [propuesta-vista-cliente.md](propuesta-vista-cliente.md) y [mapeo-rol-coordinador.md](../07-planificacion/mapeo-rol-coordinador.md). **El endpoint aún no existe en el backend.** |
 
 ## Fuera de alcance
 
@@ -39,6 +40,7 @@
 | `POST /mobile/storage/upload-url` | URL firmada para subir una foto a GCS. |
 | `PUT` a la URL firmada | Subida directa a GCS (sin token). |
 | `POST /mobile/traslado/{id}/confirmar-salida` y `/confirmar-entrega` | Registrar el despacho con las fotos ya subidas. |
+| `GET /api/seguimiento/traslados` | **Propuesto, todavía no existe en el backend.** Lista de traslados para el rol `coordinador` ([pedido](../07-planificacion/pedido-backend-seguimiento-coordinador.md)). |
 
 > TODO(verificar): el endpoint de cierre de sesión (`logout`) no se listó aquí; ver `src/core/auth/authCookie.ts`.
 

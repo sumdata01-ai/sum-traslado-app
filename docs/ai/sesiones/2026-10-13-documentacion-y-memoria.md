@@ -1,4 +1,4 @@
-# Sesión 2026-10-13 — Documentación, memoria del proyecto y aviso de orden ya tomada
+# Sesión 2026-10-13 — Documentación, memoria del proyecto y aviso de orden ya tomada (probado en producción)
 
 Herramienta: Claude Code
 
@@ -24,37 +24,41 @@ Herramienta: Claude Code
 - Hay diferencias entre el diseño original y el código: [discrepancias.md](../discrepancias.md).
 
 ## Verificaciones realmente ejecutadas
-Corridas al **cierre de la sesión** (todas con el código tal como está en el disco):
+Corridas al **cierre** (código tal como está en `main`, commit `1cb9faa`):
 
 | Comprobación | Resultado |
 |---|---|
-| `npm run typecheck` | Sin errores. |
-| `npm run lint` | Sin errores. |
-| `npm test` | **1513 pruebas pasan, 0 omitidas** (69 archivos). Con el backend local activo corrieron también las 31 pruebas contra el backend real, que antes se omitían solas. |
+| `npm run typecheck` y `npm run lint` | Sin errores. |
+| `npx vitest run --exclude "**/*.backend.test.ts"` | **1483 pruebas pasan** (67 archivos). Se **excluyeron a propósito** las pruebas contra el backend real: con `:8050` encendido se ejecutarían y toman y sueltan una orden (ver «Lo que se comprobó en producción»). |
 | `npm run build` | Compila. |
-| Orden tomada por el usuario de prueba tras esas pruebas | 0: no quedó nada tomado en la base de desarrollo local. |
 | Restos de mutación (`*.bak` en `src/`) | 0. |
-| Enlaces de los `.md` (script temporal fuera del repositorio) | 186 enlaces en 52 archivos, ninguno roto; sin datos personales; todos los documentos enlazados en el índice; ninguna cita del código con nombre viejo. |
+| Enlaces de los `.md` (script temporal fuera del repositorio) | 190 enlaces, ninguno roto; sin datos personales; todos los documentos en el índice. |
+| Git | Nada sin commitear ni sin subir; `origin/main` = `1cb9faa`. |
 
-Verificaciones de la sesión que no se repitieron al cierre:
-- Mutación del aviso de orden ya tomada: 17 comportamientos rotos a propósito, 16 detectados a la primera y 1 no (la lectura de `fecha_entrega`); se añadió la prueba y se detecta.
-- Consulta de solo lectura al backend **local** con dos VIN reales (`/vin` responde 200 con `ordenes: []`).
+Antes en la sesión: mutación del aviso de orden ya tomada (17 + 3 comportamientos rotos a propósito, todos detectados al final) y una corrida completa de 1514 pruebas **con** las del backend real (con el backend local encendido; no quedó ninguna orden tomada).
 
-**Confirmado por el usuario:** `localhost:8050` apunta a la base local porque él fija las variables de entorno al arrancar (por defecto lee producción); ver [discrepancias.md](../discrepancias.md) #11.
-- **No verificado:** la prueba en Chrome del aviso contra el backend nuevo (se hará en producción tras el despliegue).
-- 
-- El aviso de orden ya tomada con datos reales: el servidor todavía no manda `otras_ordenes`.
-- La galería (HEIC, fotos grandes) y el escáner con una etiqueta real, en iPhone y en Android.
+### Lo que se comprobó en producción (solo lectura, 2026-10-13)
+Con el usuario `el usuario de prueba` (rol `operario`), a través del sitio desplegado:
+- El backend de producción ya devuelve `otras_ordenes` en `/mobile/traslado/vin/{vin}`.
+- En un Chrome limpio, la página desplegada muestra «**Orden ya tomada el 13/10, 10:38**» para una orden en tránsito de otra persona, y el aviso de entregada para una orden ya entregada. Ya no dice «Sin orden pendiente».
+- Se abrió y cerró sesión (`POST /api/login` y `POST /api/refresh`); **ninguna petición de tomar, soltar ni confirmar**.
+
+### Evidencia sobre `localhost:8050`
+Las respuestas de `:8050` y de producción fueron **idénticas hasta el milisegundo** (por ejemplo la hora de entrega `18:02:04.429` de la orden 3697, ocurrida hoy). Una base local aislada no puede reproducirlo: es la evidencia más fuerte de que, cuando se probó, ese backend leía producción, aunque el usuario recuerda haberlo apuntado a local con variables de entorno. No se puede demostrar desde la API. Ver [discrepancias.md](../discrepancias.md) #11.
+
+**No verificado:**
+- La galería (HEIC, fotos grandes) y el escáner con una etiqueta real, en iPhone y Android.
 - El CORS del bucket para el origen de Vercel.
-- Ninguna sesión nueva de Claude Code o Codex leyendo `CLAUDE.md` y `AGENTS.md` (la regla de lectura no se comprobó en la práctica).
-- El commit: **nada de lo de esta sesión está commiteado** (el último commit es `8de83a7`, del escáner de VIN).
+- La regla de lectura de `CLAUDE.md` y `AGENTS.md` en una sesión nueva.
+- A qué base apuntaba `:8050` en las pruebas que tomaron y soltaron órdenes.
 
 ## Pendientes / siguiente paso
-- **Siguiente paso concreto:** pedir el commit y el push de lo de esta sesión (hay 53 rutas sin commitear: `git status --short`). Va todo junto: la reorganización de `docs/`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`, el skill, `.gitignore`, los 16 comentarios actualizados y el aviso de orden ya tomada. Vercel desplegará al subir.
-- Pedir al backend el campo `otras_ordenes` (ver el documento enlazado arriba) y decidir si se suaviza ya el texto «Sin orden pendiente… espera a que el supervisor la cree».
-- Decidir si se añaden al `.env.example` las variables que solo salen del código.
+- **Siguiente paso concreto:** comprobar cómo se arranca el backend local (`DB_HOST` y variables) y decidir si se prepara un control que impida correr las pruebas que escriben (`*.backend.test.ts`, E2E) si no se confirma que apunta a local. Hasta entonces, `npm test` **no se corre con `:8050` encendido**: usar `npx vitest run --exclude "**/*.backend.test.ts"`.
+- Estimar si se acorta el aviso de orden **entregada** (hoy conserva el texto largo; solo se acortó el de «ya tomada»).
+- Backend, sin cambios desde la rama: la fecha de entrega **estimada** (salida + 2 h en 6 órdenes cerradas a mano) hará que la página diga «se entregó el…» con una hora inventada; `username` (el DNI) sale como nombre si el usuario no tiene nombre; `buscar?q=` sigue sin ver órdenes ya salidas.
 - Pruebas en teléfono: JPEG y tamaño, 360 px, permisos, galería (HEIC, fotos grandes), escáner con una etiqueta real, Android.
 - CORS del bucket para el origen de Vercel (decisión del usuario; ver [vercel.md](../../05-despliegue/vercel.md)).
+- Decidir si se añaden al `.env.example` las variables que solo salen del código.
 
 ## Aprendizajes a llevar a memoria
-Al mover o renombrar un documento, buscar sus citas en el código (`grep`) y pedir permiso antes de tocar archivos que no sean `.md`.
+Pasados a [convenciones.md](../convenciones.md) y [comandos.md](../comandos.md): no correr `npm test` con el backend encendido sin saber a qué base apunta, y el comando que excluye las pruebas del backend real.

@@ -23,3 +23,4 @@ Opción 2, decisión del usuario. Consecuencias inmediatas: `e2e/subida.spec.ts`
 - Quedan 5 fotos de prueba en el bucket de producción (bajo `traslado/2026/10/`); el usuario decidió dejarlas.
 - Para probar la subida y la confirmación de verdad hace falta un backend y un bucket de desarrollo, con CORS para los orígenes de prueba.
 - La regla está también en `CLAUDE.md` y `AGENTS.md`.
+- **No se puede dar por hecho que `localhost:8050` use la base de desarrollo:** el 2026-10-13 sus datos coincidieron con los de producción hasta el milisegundo ([discrepancias.md](../ai/discrepancias.md) #11). Por eso las pruebas que toman o sueltan órdenes no se corren contra ese puerto sin confirmar a qué base apunta.
