@@ -7,6 +7,8 @@
  */
 import { AuthCookie, canalDelNavegador } from '@/core/auth'
 import { createApiClient } from '@/core/http'
+import { crearSeguimientoApi } from '@/features/seguimiento/api/seguimientoApi'
+import { ListaSeguimiento } from '@/features/seguimiento/data/listaSeguimiento'
 import { crearStorageApi } from '@/features/traslado/api/storageApi'
 import { crearTrasladoApi } from '@/features/traslado/api/trasladoApi'
 import { ConfirmacionTraslado } from '@/features/traslado/data/confirmacionTraslado'
@@ -53,6 +55,9 @@ export const catalogo = new CatalogoTraslado({ api: trasladoApi, cache: new Cata
 
 /** O-03: búsqueda de un VIN en el sistema; es solo lectura y no guarda nada. */
 export const identificador = new IdentificadorVin({ api: trasladoApi })
+
+/** Vista del coordinador: los traslados que genera Traslado, solo lectura y solo en memoria (sin Dexie). */
+export const seguimiento = new ListaSeguimiento({ api: crearSeguimientoApi(api) })
 
 /** E4-01: las fotos tomadas (en este teléfono) y su subida a GCS: cada una se sube al tomarla. */
 export const fotos = (() => {
