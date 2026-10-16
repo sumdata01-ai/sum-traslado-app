@@ -38,6 +38,10 @@ Valores (en `camera/config.ts`): resolución pedida 1920×1080, lado largo máxi
 
 `EscanerVin` abre la cámara y `EscanerCodigos` analiza un cuadro cada 150 ms (lado largo de 1024 px) con `@zxing/browser`, **cargada solo al abrir el escáner**. Lee QR, Code 128, Code 39 y Data Matrix. `extraerVin` toma el VIN completo suelto del texto leído; si no lo hay, deja el texto en mayúsculas y sin espacios, como la app móvil. El resultado solo llena el filtro; no consulta al servidor.
 
+## Visor del QR de la llegada (L-01)
+
+`EscanerQr` (`features/llegada/components`) usa la misma cámara (`CameraSession`) y el mismo lector (`EscanerCodigos`, `@zxing/browser` bajo demanda) que el escáner de VIN, pero **entrega el texto crudo**: sin `extraerVin`, sin `trim()` ni mayúsculas, porque el código del QR distingue mayúsculas y el servidor es estricto. Es un visor dentro de la página (no un diálogo modal), lee un solo código y la cámara se suelta al desmontarse. No se tocó `EscanerVin`.
+
 ## Formulario de captura
 
 - Seis zonas en la salida y cinco en la entrega (`domain/zonas.ts`): la entrega no lleva las dos de placa y añade `VIN`.

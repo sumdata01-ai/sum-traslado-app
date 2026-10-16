@@ -1,8 +1,8 @@
 # Pedido al backend: el rol `coordinador` y el endpoint de seguimiento
 
-Última actualización: 2026-10-15 | Fuente: `sum-bck-modulos` (`app/schemas/auth.py`, `app/api/deps.py`, `app/api/v1/telemetria.py`, `app/services/telemetria_service.py`, `app/api/v1/traslado.py`, `migrations/020_traslado.sql`), `src/features/seguimiento/api/` de este repositorio | Estado: **pedido sin enviar**. La web ya está construida contra este contrato, probada con un servidor falso.
+Última actualización: 2026-10-15 | Fuente: `sum-bck-modulos` (`app/schemas/auth.py`, `app/api/deps.py`, `app/api/v1/telemetria.py`, `app/services/telemetria_service.py`, `app/api/v1/traslado.py`, `migrations/020_traslado.sql`), `src/features/seguimiento/api/` de este repositorio | Estado: **implementado** en `sum-bck-modulos` (rama `feat/seguimiento-coordinador`, commit `625d741`, merge `65afcac`, ya en su `origin/main` según se comprobó el 2026-10-15); **sin comprobar que esté desplegado en Cloud Run**. La web está construida contra este contrato.
 
-> **Convención:** los nombres y las reglas son **propuesta**; nada de esto existe todavía en el backend. Lo que se afirma del backend salió de la copia local (`feature/utilitarios-asistencia-qr`), **sin verificar contra producción**. Contexto: [mapeo-rol-coordinador.md](mapeo-rol-coordinador.md) y [propuesta-vista-cliente.md](../01-vision-y-alcance/propuesta-vista-cliente.md).
+> **Convención:** este documento nació como propuesta y **ya está implementado** (ver el estado arriba); lo que difiere se anota donde ocurre. Lo que se afirma del backend salió de la copia local, **sin verificar contra producción**. Contexto: [mapeo-rol-coordinador.md](mapeo-rol-coordinador.md) y [propuesta-vista-cliente.md](../01-vision-y-alcance/propuesta-vista-cliente.md).
 
 ## El problema
 
@@ -128,8 +128,8 @@ Siguiendo `tests/test_rol_gerencia.py`:
 
 ## Puntos abiertos
 
-1. La ventana de días (punto 3) y si hace falta paginar.
-2. Cómo distinguir una entrega con hora estimada (`entrega_estimada`).
+1. La ventana de días (punto 3) y si hace falta paginar. **Implementado:** pendientes de hoy, todas las en tránsito y entregadas, cerradas o canceladas de los últimos 7 días (`VENTANA_DIAS`); sin paginar.
+2. ~~Cómo distinguir una entrega con hora estimada (`entrega_estimada`).~~ **No se envía** (2026-10-15): la base no marca las entregas cerradas a mano; la web toma toda hora como medida.
 3. **El hueco de `require_auth`:** un coordinador podrá llamar cualquier endpoint que solo exija sesión (por ejemplo `GET /storage/signed-url/{key}` o `/vehiculo/ubicacion/{vin}`). Es el mismo hueco que ya anota `sum-portal-front/documents/migraciones/diagnostico-arquitectura-erp.md` §1.2. Antes de dar cuentas reales conviene cerrar al menos los que devuelven datos de vehículos. No forma parte de este pedido, pero lo condiciona.
 4. Datos personales: validar con el área legal si la ubicación llegara a mostrarse a terceros.
-5. TODO(verificar): rama en la que se implementa y si la cuenta de pruebas del rol existe en la base de desarrollo.
+5. ~~Rama y cuenta de pruebas~~ Rama `feat/seguimiento-coordinador` (en su propia carpeta de trabajo); cuenta local `coordinador.prueba` en la réplica de pruebas. **Falta la cuenta en producción** (la crea un `admin` por `POST /api/users`; el formulario del portal no ofrece el rol).

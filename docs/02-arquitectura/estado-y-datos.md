@@ -14,6 +14,7 @@ No hay librería de estado. Cada controlador de `data/` es una clase que expone 
 | `FormularioCaptura` | Las fotos de un momento de una orden y su estado de subida. |
 | `SubidaFotos` | Sube cada foto a GCS, de una en una por foto. |
 | `ConfirmacionTraslado` | «Confirmar salida» y «Confirmar entrega». |
+| `ControladorLlegada` | El recorrido de «Marcar llegada» (`features/llegada`): **solo en memoria, sin Dexie**. Máquina de estados (explicación, escaneo, buscando ubicación, enviando, esperando precisión y cada resultado), un envío por escaneo, un fix de 20 s como máximo, esperas de 30 s. Se crea por pantalla (`useLlegada`), y `dispose()` suelta el GPS y los temporizadores y descarta lo que llegue tarde; es **reutilizable** después de `dispose()` (React monta, desmonta y vuelve a montar en desarrollo). |
 | `ListaSeguimiento` | La lista del coordinador (`features/seguimiento`): **solo en memoria, sin Dexie**. Una petición a la vez, no vacía lo mostrado ante un fallo, un 403 vacía y muestra «sin permiso», y se vacía al cerrar sesión o si entra otra persona (`iniciar(idUsuario)`). Hook `useListaSeguimiento`: pide la lista **una sola vez al abrir** y no vuelve a pedir nada por su cuenta (ni por tiempo, ni al volver a la pestaña, ni al volver la red); solo el botón «Actualizar». |
 
 ## Datos locales (Dexie, base `sum-traslado`, versión 5)

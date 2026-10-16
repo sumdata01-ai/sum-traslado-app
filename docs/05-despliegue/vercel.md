@@ -1,6 +1,6 @@
 # Despliegue en Vercel
 
-Última actualización: 2026-10-13 | Fuente: vercel.json, README.md, docs/07-planificacion/plan-sprints.md | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: vercel.json, README.md, docs/07-planificacion/plan-sprints.md, git | Estado: vigente
 
 ## Estado
 
@@ -32,6 +32,10 @@
 ## Importante: apunta a producción
 
 Todo lo que se haga en el sitio desplegado (iniciar sesión, tomar una orden, subir una foto, confirmar) es **real**. Se decidió usarlo **solo para ver las pantallas**. Para probar la cámara y la galería sin subir nada: `https://sum-traslado-app.vercel.app/?herramientas` › «Probar la cámara». Las vistas previas de Vercel (una por rama o PR) también apuntan a producción.
+
+## La vista del coordinador (2026-10-15)
+
+`/api/seguimiento/*` usa la misma regla `/api/:path*`: **no hizo falta cambiar `vercel.json`**. La vista está en `main` (`29fcde0`) y solo la ve una cuenta con rol `coordinador`; esa cuenta **no existe todavía en producción** y se crea con un `admin` (`POST /api/users`). Si el alta responde `422 rol no válido`, el backend de producción aún no tiene el rol. No se comprobó el estado del despliegue de Vercel ni el de Cloud Run. Ver [pedido-backend-seguimiento-coordinador.md](../07-planificacion/pedido-backend-seguimiento-coordinador.md).
 
 ## CORS del bucket (D3)
 

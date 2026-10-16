@@ -1,6 +1,6 @@
 # 0011. La vista del coordinador entra por rol, es de solo lectura y vive en memoria
 
-Última actualización: 2026-10-15 | Fuente: src/app/AppShell.tsx, src/core/auth/sesion.ts, src/features/seguimiento/, docs/07-planificacion/mapeo-rol-coordinador.md | Estado: vigente (web construida; backend pendiente)
+Última actualización: 2026-10-15 | Fuente: src/app/AppShell.tsx, src/core/auth/sesion.ts, src/features/seguimiento/, docs/07-planificacion/mapeo-rol-coordinador.md | Estado: vigente (web y backend construidos; falta la cuenta en producción)
 
 - **Estado:** aceptada
 - **Fecha:** 2026-10-15
@@ -25,10 +25,20 @@ SUM quiere que una persona de coordinación vea el seguimiento de los traslados 
 - **Solo web**: la app móvil (Flutter) no cambia; un rol que no conoce queda «sin sesión».
 - **Endpoint bajo `/api/seguimiento/`**, no `/v1/`: esta web solo reenvía `/api` y `/mobile` al backend ([ADR 0003](0003-mismo-origen-por-proxy.md)).
 
+## Actualización 2026-10-15 (después de ver la vista)
+
+Decisiones del usuario que cambian lo que la vista muestra y hace, sin cambiar lo decidido arriba:
+
+- **Sin nada de GPS:** ni ubicación ni si el traslado lleva dispositivo. El backend lo sigue enviando; la web no lo lee.
+- **Sin órdenes anuladas.**
+- **Sin renovación automática:** la lista se pide al abrir y con «Actualizar».
+- **Consulta masiva de VIN** (`POST /api/seguimiento/consulta-vines`), solo lectura; todo lo que no está en tránsito ni entregado es «pendiente de información».
+- El rol, el endpoint y la consulta masiva ya existen en el backend (merge `65afcac`). Detalle de producto en el [backlog (E7)](../07-planificacion/backlog.md).
+
 ## Consecuencias
 
 - El acceso lo decide el rol en la web (comodidad) y **el backend lo decide en cada petición** (seguridad): sin el guard del backend, esta decisión no protege nada.
 - Un coordinador puede llamar cualquier endpoint que solo exija sesión (`require_auth`): hay que cerrarlos antes de dar cuentas reales ([mapeo §8](../07-planificacion/mapeo-rol-coordinador.md)).
 - Sin red no hay «lo último guardado»: la primera carga espera al servidor.
-- Hay que agregar `coordinador` a `ROLES_VALIDOS` del backend, o el alta lo rechaza ([pedido](../07-planificacion/pedido-backend-seguimiento-coordinador.md)).
+- `coordinador` ya está en `ROLES_VALIDOS` del backend ([pedido](../07-planificacion/pedido-backend-seguimiento-coordinador.md)); sin el despliegue en producción, el alta de la cuenta responde 422.
 - La web decide por `allowed_apps` para Traslado y por rol para el coordinador: dos criterios, documentados en [navegacion-y-sesion.md](../02-arquitectura/navegacion-y-sesion.md).

@@ -2,6 +2,8 @@
 
 Herramienta: Claude Code
 
+> **Continúa en la [parte 2](2026-10-15-vista-seguimiento-coordinador-parte-2.md):** el backend se implementó y se mezcló, la vista se rediseñó (sin GPS, sin anuladas, sin renovación automática), se agregó la consulta masiva de VIN y todo llegó a `main`. Los «pendientes» de abajo son los del cierre de la parte 1 y están superados.
+
 ## Objetivo
 1. Proponer qué ofrecer a un usuario que debe seguir los vehículos que se trasladan (¿ya salió?, ¿va en camino?, ¿lleva GPS?, ¿por dónde va?), definir su **MVP** y **replicar la vista en esta web**.
 2. Revisar el backend para decidir **cómo entra** esa persona (login y roles) y mapear el rol nuevo.
