@@ -14,6 +14,17 @@ export interface DecodificadorCodigos {
 /** Los errores de «no encontré nada» de la librería no son fallos: el cuadro simplemente no tiene un código. */
 const SIN_CODIGO = new Set(['NotFoundException', 'ChecksumException', 'FormatException'])
 
+/**
+ * ¿Esta excepción es de las de «este cuadro no tiene código»? Se reconoce por `getKind()` (el `kind` fijo de cada clase de la librería)
+ * y **no por `name`**: la librería no fija `name`, lo toma del nombre de la función constructora, y el minificador del build de
+ * producción lo cambia por una letra. Con `name`, en producción todo cuadro sin QR parecía un fallo y el escáner se detenía en el primero
+ * («No se pudo leer el código»); solo leía si el QR ya estaba a la vista al abrir la cámara (2026-10-16). En desarrollo no se notaba.
+ */
+function esCuadroSinCodigo(causa: unknown): boolean {
+  if (typeof causa !== 'object' || causa === null || !('getKind' in causa) || typeof causa.getKind !== 'function') return false
+  return SIN_CODIGO.has(String(causa.getKind()))
+}
+
 export async function crearDecodificadorZxing(): Promise<DecodificadorCodigos> {
   const [{ BrowserMultiFormatReader }, { BarcodeFormat, DecodeHintType }] = await Promise.all([
     import('@zxing/browser'),
@@ -30,7 +41,7 @@ export async function crearDecodificadorZxing(): Promise<DecodificadorCodigos> {
       try {
         return lector.decodeFromCanvas(lienzo).getText()
       } catch (causa) {
-        if (typeof causa === 'object' && causa !== null && 'name' in causa && SIN_CODIGO.has(String(causa.name))) return null
+        if (esCuadroSinCodigo(causa)) return null
         throw causa
       }
     },

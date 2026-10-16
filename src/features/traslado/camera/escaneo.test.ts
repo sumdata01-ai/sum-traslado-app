@@ -1,5 +1,6 @@
 // @vitest-environment node
 /** O-05 · el lector de códigos: cuadro a cuadro, una lectura, y sin dejar nada colgado. */
+import { ChecksumException, FormatException, IllegalStateException, NotFoundException } from '@zxing/library'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { type DecodificadorCodigos, EscanerCodigos, INTERVALO_ESCANEO_MS, LADO_LARGO_ESCANEO_PX, crearDecodificadorZxing } from './escaneo'
 
@@ -251,6 +252,16 @@ describe('el decodificador de zxing', () => {
   const falla = (nombre: string) => () => {
     throw Object.assign(new Error(nombre), { name: nombre })
   }
+  /**
+   * La excepción **real** de la librería, con el `name` que le deja el minificador del build de producción (una letra): la librería
+   * lo toma del nombre de la función constructora y no lo fija ella. El 2026-10-16 el escáner se detenía en el primer cuadro sin QR
+   * porque se reconocía por `name` («No se pudo leer el código»). Lo que sobrevive a la minificación es `kind`/`getKind()`.
+   */
+  const fallaRealMinificada = (Clase: typeof NotFoundException | typeof ChecksumException | typeof FormatException) => () => {
+    const error = new Clase()
+    Object.defineProperty(error, 'name', { value: 't' })
+    throw error
+  }
   const lienzo = {} as HTMLCanvasElement
 
   it('devuelve el texto del código leído', async () => {
@@ -258,13 +269,39 @@ describe('el decodificador de zxing', () => {
     expect(decodificador.decodificar(lienzo)).toBe('LSCABN3E2VE840638')
   })
 
-  it.each(['NotFoundException', 'ChecksumException', 'FormatException'])('«%s» es un cuadro sin código: devuelve null, no un error', async (nombre) => {
-    const decodificador = await crear(falla(nombre))
+  it.each([
+    ['NotFoundException', NotFoundException],
+    ['ChecksumException', ChecksumException],
+    ['FormatException', FormatException],
+  ] as const)('«%s» real, con el nombre minificado del build de producción, es un cuadro sin código: devuelve null', async (_nombre, Clase) => {
+    const decodificador = await crear(fallaRealMinificada(Clase))
     expect(decodificador.decodificar(lienzo)).toBeNull()
+  })
+
+  it('un cuadro sin código no detiene la lectura: los siguientes se siguen leyendo hasta encontrar el QR', async () => {
+    let cuadro = 0
+    const decodificador = await crear(() => {
+      cuadro++
+      if (cuadro < 4) fallaRealMinificada(NotFoundException)()
+      return { getText: () => 'QR-DE-LA-TABLET' }
+    })
+    expect([1, 2, 3, 4].map(() => decodificador.decodificar(lienzo))).toEqual([null, null, null, 'QR-DE-LA-TABLET'])
   })
 
   it('cualquier otro error SÍ se propaga: no se confunde con «no hay código»', async () => {
     const decodificador = await crear(falla('TypeError'))
+    expect(() => decodificador.decodificar(lienzo)).toThrow()
+  })
+
+  it('otra excepción real de la librería (que no es de «sin código») SÍ se propaga', async () => {
+    const decodificador = await crear(() => {
+      throw new IllegalStateException('lector en mal estado')
+    })
+    expect(() => decodificador.decodificar(lienzo)).toThrow('lector en mal estado')
+  })
+
+  it('un error ajeno que se llame como una de las excepciones de «sin código» SÍ se propaga: lo que cuenta es el tipo de la librería, no el nombre', async () => {
+    const decodificador = await crear(falla('NotFoundException'))
     expect(() => decodificador.decodificar(lienzo)).toThrow()
   })
 
