@@ -16,6 +16,7 @@ import type { ListaOrdenes, ResultadoAccion, VistaOrden } from '@/features/trasl
 import { filtrarPorVin, normalizarFiltro, valeMostrarAvance } from '@/features/traslado/domain'
 import { CapturaPage } from './CapturaPage'
 import { HerramientasDePrueba, herramientasVisibles } from './HerramientasDePrueba'
+import { type ConfigLlegada, LlegadaPage, type LlegadaPageProps } from './LlegadaPage'
 import { SinPermisoPage } from './SinPermisoPage'
 
 export interface HomePageProps {
@@ -29,6 +30,10 @@ export interface HomePageProps {
   fotos?: { store: FotoStorePort; subidas: SubidaFotos; confirmacion: ConfirmacionTraslado }
   /** Solo para sustituir la cámara y el lector del escáner de VIN en las pruebas. */
   escaner?: Pick<EscanerVinProps, 'crearSesion' | 'cargarDecodificador' | 'crearLienzo'>
+  /** La marcación de llegada por QR (lado del conductor). Sin esto la home no ofrece «Marcar llegada». */
+  llegada?: ConfigLlegada
+  /** Solo para sustituir la cámara y el lector del escáner de la llegada en las pruebas. */
+  escanerLlegada?: LlegadaPageProps['escaner']
   onCerrarSesion: () => void
 }
 
@@ -39,7 +44,7 @@ export interface HomePageProps {
  * orden del pool («Comenzar despacho») y se suelta una propia (O-02). Si el filtro no encuentra un VIN
  * en el teléfono, se puede buscar en el sistema (O-03).
  */
-export function HomePage({ sesion, lista, catalogo, identificador, fotos, escaner, onCerrarSesion }: HomePageProps) {
+export function HomePage({ sesion, lista, catalogo, identificador, fotos, escaner, llegada, escanerLlegada, onCerrarSesion }: HomePageProps) {
   const instantanea = useListaOrdenes(lista, sesion.idUsuario)
   const opciones = useCatalogoTraslado(catalogo)
   const [filtro, setFiltro] = useState('')
@@ -47,6 +52,7 @@ export function HomePage({ sesion, lista, catalogo, identificador, fotos, escane
   const [ocupadas, setOcupadas] = useState<ReadonlySet<number>>(new Set())
   const busqueda = useSyncExternalStore(identificador.suscribir, identificador.getSnapshot)
   const [escaneando, setEscaneando] = useState(false)
+  const [marcandoLlegada, setMarcandoLlegada] = useState(false)
   const [capturando, setCapturando] = useState<{ idOrden: number; vin: string; momento: Momento } | null>(null)
 
   // Lo que se buscó en el sistema vale para el texto que se escribió: si el filtro cambia, o se sale de la
@@ -74,6 +80,8 @@ export function HomePage({ sesion, lista, catalogo, identificador, fotos, escane
       />
     )
   }
+
+  if (llegada && marcandoLlegada) return <LlegadaPage llegada={llegada} escaner={escanerLlegada} onVolver={() => setMarcandoLlegada(false)} />
 
   if (instantanea.sinPermiso) return <SinPermisoPage mensaje={instantanea.sinPermiso.mensaje} onCerrarSesion={onCerrarSesion} />
 
@@ -165,6 +173,12 @@ export function HomePage({ sesion, lista, catalogo, identificador, fotos, escane
           {instantanea.actualizando ? 'Actualizando…' : 'Actualizar'}
         </Button>
       </div>
+
+      {llegada && (
+        <Button variante="secundario" className="mb-4 w-full" onClick={() => setMarcandoLlegada(true)}>
+          Marcar llegada
+        </Button>
+      )}
 
       <div className="mb-4 flex flex-col gap-2">
         {mensaje && <Banner tono={mensaje.tono}>{mensaje.texto}</Banner>}
