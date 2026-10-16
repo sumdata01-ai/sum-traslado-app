@@ -9,6 +9,8 @@ Front web de **Traslado** de SUM Vehículos: el operario toma una orden, fotogra
 
 **Tercera funcionalidad (2026-10-15):** la **marcación de llegada por QR** del conductor (`features/llegada`, `LlegadaPage`, botón «Marcar llegada» en la home): escanea el QR de la tablet del punto y manda su ubicación a `POST /mobile/llegadas`; ve el punto, su turno y la hora de Lima. Solo el lado del conductor (el backend y la tablet ya existen en la app `sum-app`), solo con internet y sin guardar nada. **No se probó en un teléfono ni contra el backend real.** Ver [marcacion-llegada-qr.md](../01-vision-y-alcance/marcacion-llegada-qr.md).
 
+**Cuarta funcionalidad (2026-10-16):** el **tablero de llegadas por QR** (`features/tablero-llegadas`, `TableroLlegadasPage`, ruta **`/dashboard`**): solo lectura, para supervisor de Despacho y de Secado, asistente de Despacho y admin (el **par rol + área**), que **entran directo y no ven Traslado**. Muestra el orden de llegada y la distancia, los códigos rechazados y la ficha de los puntos. Usa `GET /api/llegada-qr/*` del backend (**sin desplegar**). Ver [tablero-llegadas-qr.md](../01-vision-y-alcance/tablero-llegadas-qr.md) y el [ADR 0013](../06-decisiones/0013-tablero-de-llegadas-en-esta-web-por-rol-y-area-en-dashboard.md).
+
 ## Stack
 Vite 8 · React 19 · TypeScript ~6 estricto · Tailwind 4 · Dexie 4 (IndexedDB) · zod 4 · `@zxing/browser` (carga bajo demanda) · Vitest 4 + Testing Library + vitest-axe + fake-indexeddb · Playwright (Chrome y Edge instalados) · Vercel.
 

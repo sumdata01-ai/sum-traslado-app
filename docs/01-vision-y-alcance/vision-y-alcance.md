@@ -20,13 +20,14 @@
 | Captura | Cámara dentro de la página o **foto de la galería** (T12), vista previa «Usar / Repetir», una ficha por zona. |
 | Envío | Cada foto se **sube a GCS al tomarla** (con «Reintentar» por foto) y «Confirmar salida» / «Confirmar entrega» registra el despacho. |
 | Llegada | **«Marcar llegada»** (L-01): el conductor escanea el QR de la tablet del punto y manda su ubicación; el servidor le da el turno del día. Solo el lado del conductor; solo con internet; no guarda nada. Detalle: [marcacion-llegada-qr.md](marcacion-llegada-qr.md). |
+| Tablero de llegadas | **Tablero de solo lectura** en **`/dashboard`** para el supervisor de Despacho y de Secado, el asistente de Despacho y el admin: el orden de llegada y a qué distancia llegó cada conductor, los códigos rechazados y las reglas de cada punto. Detalle: [tablero-llegadas-qr.md](tablero-llegadas-qr.md). **Necesita el backend nuevo desplegado.** |
 | Seguimiento (rol `coordinador`) | Una vista de **solo lectura** con todos los traslados que genera Traslado: etapa (en planta, en camino, entregado, anulado), si llevan GPS y los hitos registrados. Buscador, destino y pestañas. **Sin mapa y sin PDI** en este MVP. Entra **por rol**, sin filtro por destino. Solo en esta web. Detalle: [propuesta-vista-cliente.md](propuesta-vista-cliente.md) y [mapeo-rol-coordinador.md](../07-planificacion/mapeo-rol-coordinador.md). **El endpoint aún no existe en el backend.** |
 
 ## Fuera de alcance
 
 - Cola automática y sincronización en segundo plano (E4-03 y E4-04, **descartadas** por la decisión de «solo con internet»).
 - Telemetría remota de errores.
-- Panel del supervisor (vive en el portal).
+- Panel del supervisor **del portal** (el tablero de llegadas por QR de esta web es una excepción decidida el 2026-10-16: [ADR 0013](../06-decisiones/0013-tablero-de-llegadas-en-esta-web-por-rol-y-area-en-dashboard.md)).
 
 ## Endpoints que usa
 
@@ -38,6 +39,7 @@
 | `GET /mobile/traslado/buscar?q=` | Candidatos por VIN parcial (mínimo 4 caracteres). |
 | `GET /mobile/traslado/vin/{vin}` | Órdenes pendientes de un VIN exacto. |
 | `POST /mobile/traslado/{id}/tomar` y `/soltar` | Tomar una orden del pool y devolverla. |
+| `GET /api/llegada-qr/dia`, `/intentos` y `/puntos` | El tablero de llegadas (solo lectura; par rol + área; 403 a cualquier otro). |
 | `POST /mobile/llegadas` | Marcar la llegada del conductor a un punto (QR + ubicación). |
 | `POST /mobile/storage/upload-url` | URL firmada para subir una foto a GCS. |
 | `PUT` a la URL firmada | Subida directa a GCS (sin token). |

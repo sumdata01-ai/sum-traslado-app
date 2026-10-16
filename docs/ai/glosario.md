@@ -17,6 +17,9 @@
 | **Llegada / punto** | La marcación de llegada (L-01): el conductor escanea el QR que muestra una tablet fija en un **punto** (por ahora el patio) y el servidor le da un **turno** del día. |
 | **`step`** | Ventana de 30 s del QR de la tablet (`floor(hora / 30)`); la hora oficial de la llegada es `step × 30`, no la del teléfono. |
 | **Fix** | Una lectura del GPS con su precisión y el instante en que se midió; solo sirve si tiene 20 s como máximo. |
+| **Tablero (de llegadas)** | La vista de solo lectura de `/dashboard` para supervisores: el orden de llegada y la distancia, los códigos rechazados y la ficha de los puntos ([tablero-llegadas-qr.md](../01-vision-y-alcance/tablero-llegadas-qr.md)). |
+| **Par (rol + área)** | Cómo se decide quién ve el tablero: el **par** (supervisor+despacho, supervisor+secado, asistente+despacho, admin), no solo el rol. |
+| **Pasos** | Cuántos `step` (30 s) tenía el QR al recibirse: `piso(recepción/30) − step`. Normal: 0, 1 o 2; más de 2 es flag (`OUT_OF_WINDOW`); más de 20 se rechaza. |
 | **Estados de la orden** | `pendiente` → `en_transito` (al confirmar la salida) → `realizado` (al confirmar la entrega); también `cancelada` y `cerrada`. |
 | **Estados de una foto** | `writing`, `pending`, `uploaded`, `failed_local`, `failed_upload`. |
 | **`storage_key`** | Ruta del objeto en el bucket, devuelta por `upload-url`. Es lo que viaja al confirmar. |
