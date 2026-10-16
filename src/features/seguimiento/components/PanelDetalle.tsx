@@ -8,6 +8,8 @@ export interface PanelDetalleProps {
   onCerrar: () => void
   /** El elemento que lo abrió: recibe el foco de vuelta al cerrar. */
   devolverFoco: HTMLElement | null
+  /** El nombre del diálogo para quien usa un lector de pantalla. Por defecto, el del traslado. */
+  etiqueta?: string
 }
 
 /**
@@ -17,7 +19,7 @@ export interface PanelDetalleProps {
  * Es un diálogo modal: el foco entra al abrir, no sale con Tab, Escape lo cierra y el foco vuelve a quien lo abrió. La página
  * de atrás no se desplaza mientras está abierto.
  */
-export function PanelDetalle({ children, onCerrar, devolverFoco }: PanelDetalleProps) {
+export function PanelDetalle({ children, onCerrar, devolverFoco, etiqueta = 'Detalle del traslado' }: PanelDetalleProps) {
   const panel = useRef<HTMLDivElement>(null)
   // El último `onCerrar`/`devolverFoco` sin volver a montar los efectos cuando la página se renueva (cada minuto).
   const cerrar = useRef(onCerrar)
@@ -71,7 +73,7 @@ export function PanelDetalle({ children, onCerrar, devolverFoco }: PanelDetalleP
         ref={panel}
         role="dialog"
         aria-modal="true"
-        aria-label="Detalle del traslado"
+        aria-label={etiqueta}
         className="absolute inset-0 overflow-y-auto bg-surface md:right-0 md:left-auto md:w-[560px] md:shadow-2xl"
       >
         {children}
