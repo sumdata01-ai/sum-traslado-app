@@ -50,7 +50,7 @@
 | E4 Envío | Subida, confirmación, drenador, sesión vencida | Must (E4-03 y E4-04: Should) |
 | E5 Testeo | Pruebas en dispositivos reales | Must |
 | E6 Topología y despliegue | D1, D2, D3 | Pendiente (ver al final) |
-| E7 Seguimiento del coordinador | C-00 (web, hecha), C-01 consulta masiva de VIN (web y backend, hechas en ramas), B-01 (backend, hecho en una rama, sin enviar) | Pedida el 2026-10-15 |
+| E7 Seguimiento del coordinador | C-00 (web, hecha), C-01 consulta masiva de VIN (web y backend, hechas en ramas), C-02 filtro por fecha (web hecha; backend en una rama, sin mezclar ni desplegar), C-06 esqueletos de carga (web, hecha), C-07 destinos que no se muestran (web, hecha), B-01 (backend, hecho en una rama, sin enviar) | Pedida el 2026-10-15 |
 
 ---
 
@@ -397,10 +397,51 @@ Como coordinador, quiero ver todos los traslados con su etapa y los hitos regist
 - **AC14.** Given el resultado, Then se resume («4 VIN consultados: 2 con información y 2 pendientes de información.»); lo anulado nunca se enseña; un fallo (sin red, 403, 5xx) se dice con qué hacer y **no borra** el último resultado; «Limpiar» lo borra todo; el resultado vive solo en memoria.
 - **AC15.** Given «Ver detalle» de un resultado, Then se abre el mismo panel de detalle que en la lista.
 - **AC16.** Given el panel de detalle, Then el vehículo, el destino, la etapa y los hitos se ven en tamaño grande (el panel ocupa el ancho en el teléfono y 560 px en pantalla grande); al abrirlo nada de la página de atrás se corre; «Cerrar» muestra su contorno completo al recibir el foco.
-- **AC11.** Given la vista, Then la lista se pide **una vez al abrir** y después **solo con el botón «Actualizar»**: no hay renovación automática (ni por tiempo, ni al volver a la pestaña, ni al volver la red). Cambiado el 2026-10-15: el usuario no la pidió. «Última actualización: HH:MM» dice cuándo llegó la última lista.
+- **AC11.** Given la vista, Then la lista se pide **una vez al abrir** y después **solo con el botón «Actualizar»**: no hay renovación automática (ni por tiempo, ni al volver a la pestaña, ni al volver la red). Cambiado el 2026-10-15: el usuario no la pidió. «Última actualización: HH:MM» dice cuándo llegó la última lista. Desde el 2026-10-16 también se pide al pulsar «Aplicar» en el filtro por fecha (C-02).
 - **Decisiones del usuario (2026-10-15):** rol `coordinador` (no `cliente`, que es el auditor de inspecciones); acceso por rol y no por `allowed_apps`; coordinador general sin filtro por destino; solo web, sin cambios en Flutter; el PDI no entra en este MVP; campos visibles como en la propuesta (sin conductor, velocidad ni fotos).
 - **Pruebas:** [U] dominio (fechas en Lima, hitos, filtros), API y esquemas, controlador; [C] página y componentes con axe; [I] acceso por rol en `App`; [E] `e2e/seguimiento.spec.ts` con las respuestas simuladas.
 - **Pendiente:** probarla en un teléfono real, y con el backend cuando exista.
+
+### C-02 Filtro por fecha · Tamaño M · *Pedida el 2026-10-16 · Backend: rama `feat/seguimiento-filtro-fecha`*
+Decisión y motivos: [ADR 0014](../06-decisiones/0014-filtro-por-fecha-del-coordinador-rango-al-servidor-y-abre-en-hoy.md). Contrato: `GET /api/seguimiento/traslados?desde=AAAA-MM-DD&hasta=AAAA-MM-DD` ([pedido](pedido-backend-seguimiento-coordinador.md)).
+
+- **AC1.** Given que el coordinador abre la vista, Then se pide **el día de hoy en Lima** (`desde` = `hasta`) y se ven los traslados **en camino y entregados** de hoy; el botón dice «Fecha: Hoy». No se ven las órdenes en planta, las anuladas ni lo de otros días.
+- **AC2.** Given el botón «Fecha», Then abre un panel con «Hoy», «Ayer», «Últimos 7 días», «Últimos 30 días» y «Rango personalizado» (Desde / Hasta), con la opción aplicada marcada y el foco en ella. No hay «Todas las fechas».
+- **AC3.** Given una opción elegida, Then **no se pide nada** hasta pulsar «Aplicar»; «Cancelar», Escape o tocar fuera cierran sin cambiar nada, devuelven el foco al botón y al volver a abrir muestran lo que está aplicado.
+- **AC4.** Given un rango personalizado, Then los campos no dejan elegir días futuros y, si el rango es inválido, el panel lo dice y sigue abierto sin pedir nada: faltan fechas («Elige las dos fechas.»), inicio posterior al fin, fin futuro, o más de 90 días.
+- **AC5.** Given un día, Then un traslado cuenta si **su salida o su entrega se registró ese día** (día de Lima, no de UTC) y está en camino o entregado: una orden que salió el 14 y se entregó el 15 está en los dos días.
+- **AC6.** Given «Aplicar» con otro rango, Then se vacía lo mostrado, se dice «Cargando los traslados…» y lo que conteste tarde del rango anterior se descarta; con el mismo rango solo actualiza sin vaciar. «Actualizar» pide de nuevo **el mismo** rango.
+- **AC7.** Given un día sin traslados, Then lo dice («No hay traslados en camino ni entregados en esta fecha: Ayer.») y el filtro sigue a la vista.
+- **AC8.** Given que se vuelve a abrir la vista, se cierra sesión o entra otra persona, Then el rango vuelve a «Hoy». Pasada la medianoche de Lima, lo que se miraba como «Hoy» pasa a rotularse «Ayer».
+- **AC9.** Given un servidor que ignora `desde` y `hasta` (el backend viejo), Then la web **descarta** lo que no pertenece al rango: no se ven traslados de otros días bajo «Hoy».
+- **AC10.** Given la consulta masiva de VIN, Then no usa este filtro (sigue siendo de cualquier fecha).
+- **Decisiones del usuario (2026-10-16):** el rango se pide al servidor al aplicar (no se filtra solo en la web); la vista inicial es la del día actual, en camino y entregado; «los registros del día» (salida o entrega).
+- **Pruebas:** [U] fechas (Lima, presets, validación, etiqueta, pertenencia al rango), API (parámetros y servidor que los ignora), controlador (rango inicial, aplicar, respuestas tardías, errores); [C] el filtro (teclado, foco, errores, axe) y la página; [E] `e2e/seguimiento.spec.ts` con el reloj fijo, en Chrome y Edge, con el panel a 360 px; backend: pruebas de servicio y de integración contra la base de pruebas.
+- **Pendiente:** **desplegar el backend** (con el viejo, «Últimos 30 días» y los rangos de más de 7 días traen los entregados incompletos); probarlo en un teléfono; decidir si las órdenes en planta deben verse con alguna fecha.
+
+### C-06 Esqueletos de carga · Tamaño S · *Pedida el 2026-10-16*
+La información puede tardar en llegar: en vez de un texto suelto («Cargando los traslados…»), la vista dibuja **la silueta de lo que va a aparecer**.
+
+- **AC1.** Given la primera carga, o un cambio de fecha («Aplicar»), Then se ve un **esqueleto con la misma silueta** que la tabla de escritorio y que la lista del teléfono, con el buscador y el filtro por fecha ya a la vista; no hay tabla ni pestañas hasta que llegue la información.
+- **AC2.** Given el esqueleto, Then **reserva** la barra de pestañas y el lugar del selector de destino (que solo existe cuando ya hay traslados): al llegar los datos **nada se mueve** (medido en navegador: ni el buscador ni las pestañas cambian de posición, a 1280 y a 360 px).
+- **AC3.** Given un lector de pantalla, Then oye un solo aviso de estado («Cargando los traslados…»); el dibujo está oculto (`aria-hidden`), no tiene nada que se pueda enfocar o tocar y no se confunde con la tabla.
+- **AC4.** Given que la persona pidió **menos movimiento**, Then el esqueleto no se anima (`motion-reduce`); si no, late suavemente. Solo usa los colores de la paleta.
+- **AC5.** Given «Actualizar» con datos a la vista, Then **no** vuelve al esqueleto: sigue mostrando lo que había mientras llega lo nuevo. Un día sin traslados, o una carga que falla, no dejan el esqueleto: dicen lo que pasó.
+- **AC6.** Given la consulta masiva de VIN, Then mientras llega el **primer** resultado se ve un esqueleto («Consultando los VIN…»); si ya hay un resultado anterior se conserva hasta que llegue el nuevo.
+- **Alcance:** solo la vista del coordinador. La home de Traslado, el tablero de llegadas y la pantalla de llegada siguen con su texto o su rueda de carga.
+- **Pruebas:** [C] el componente y la página (con axe); [E] `e2e/seguimiento.spec.ts` con un servidor lento, a 1280 y 360 px, y con «reducir movimiento».
+
+### C-07 Destinos que no se muestran · Tamaño S · *Pedida el 2026-10-16*
+Los vehículos cuyo destino sea **PLANETA** o **SATELITAL** no deben aparecer en la vista del coordinador.
+
+- **AC1.** Given un traslado cuyo destino es `PLANETA` o `SATELITAL` (en cualquier etapa), Then **no aparece** en la lista (tabla ni lista del teléfono), ni en las pestañas (los números son los de lo que se ve), ni en el selector de destino, ni lo encuentra el buscador (por nombre de destino ni por VIN).
+- **AC2.** Given un destino, Then se compara el **nombre entero**, sin importar mayúsculas, tildes ni espacios en los extremos («Satelital», «SATELITAL», « satélital » son el mismo); un destino que solo **contiene** esa palabra («Sede Satelital Norte», «Planeta Sur») **sí se muestra**.
+- **AC3.** Given un traslado **sin destino**, Then sigue a la vista como «Sin destino».
+- **AC4.** Given que todo lo que llega es de esos destinos, Then se dice que no hay traslados en esa fecha (no se deja una tabla vacía ni se queda cargando).
+- **AC5.** Given la **consulta masiva de VIN**, Then un VIN cuyo destino es uno de esos sale como **«Pendiente de información»** (igual que lo anulado: no se enseña su vehículo, pero el VIN no se pierde).
+- **Dónde se aplica:** en la web, en `esVisible` (`domain/presentacion.ts`), el mismo punto que descarta lo anulado; la lista editable es `DESTINOS_OCULTOS`. **El backend sigue mandando esos traslados** (no se tocó): la regla no depende de que se despliegue nada, pero los datos sí viajan hasta el navegador. Si se quisiera que ni lleguen, habría que aplicarla en `sum-bck-modulos`.
+- **Pruebas:** [U] dominio (el nombre entero, mayúsculas, tildes, sin destino), API de la consulta masiva; [C] la página (lista, pestañas, selector, buscador, día vacío); [E] `e2e/seguimiento.spec.ts` (lista y consulta masiva) en Chrome y Edge.
+- **Pendiente:** confirmar con el catálogo de SUM que los nombres reales son exactamente `PLANETA` y `SATELITAL` (hoy solo hay evidencia de «Satelital» en las pruebas del backend); decidir si se aplica también en el backend.
 
 ### B-01 El rol `coordinador` y el endpoint de seguimiento · *Backend, sin hacer*
 Ver [pedido-backend-seguimiento-coordinador.md](pedido-backend-seguimiento-coordinador.md): `coordinador` en `ROLES_VALIDOS`, `GET /api/seguimiento/traslados` con guard por rol, lista cerrada de campos, sin llamar al proveedor de GPS. **Bloquea** probar C-00 con datos reales.

@@ -1,6 +1,6 @@
 # Logos de marca
 
-Última actualización: 2026-10-15 | Fuente: `src/features/seguimiento/components/piezas.tsx`, `src/features/seguimiento/domain/presentacion.ts` (`claveMarca`), marcas con órdenes en la base de pruebas local | Estado: vigente
+Última actualización: 2026-10-16 | Fuente: `src/features/seguimiento/components/piezas.tsx`, `src/features/seguimiento/domain/presentacion.ts` (`claveMarca`), marcas con órdenes en la base de pruebas local, kyc.com.ar | Estado: vigente
 
 Logos de las marcas que se muestran en la vista de seguimiento del coordinador. Sin archivo para una marca, la vista muestra un círculo con su inicial.
 
@@ -15,12 +15,17 @@ Logos de las marcas que se muestran en la vista de seguimiento del coordinador. 
 | `porsche.png` | `PORSCHE` |
 | `seat.png` | `SEAT` |
 | `soueast.png` | `SOUEAST` |
+| `kyc.svg` | `KYC` |
 
-**Sin logo todavía** (se ve la inicial): `KYC` y el resto del catálogo (`KAIYI`, `KARRY`, `FAW`, `DONGFENG`, `KIA`, `MAZDA`…). `KYC` es la 3.ª marca con más órdenes en la base de pruebas y el repositorio de origen no la trae: > TODO(verificar) qué marca es (¿Kaiyi?) y de dónde sacar su logo.
+**Sin logo todavía** (se ve la inicial): el resto del catálogo (`KAIYI`, `KARRY`, `FAW`, `DONGFENG`, `KIA`, `MAZDA`…). `KYC` era la 3.ª marca con más órdenes en la base de pruebas.
+
+> TODO(verificar): si `KYC` y `KAIYI` son marcas distintas en el catálogo de SUM. Fuentes externas indican que KYC (utilitarios Mamut, V7 y F3) no es Kaiyi (grupo Chery), pero no se comprobó contra el backend de SUM. Si el servidor manda las dos escrituras para una misma marca, agregar el alias en `ALIAS_MARCA` de `presentacion.ts`.
 
 ## Origen y condiciones
 
-Los siete salen del repositorio público [car-logos-dataset](https://github.com/filippofilip95/car-logos-dataset) (carpeta `logos/optimized`), publicado con licencia MIT. **Esa licencia cubre el código del repositorio, no las marcas**: los logos son propiedad de sus fabricantes. Se descargaron el 2026-10-15, se recortó el espacio vacío y se redujeron de tamaño (el de SEAT original pesaba 600 KB).
+**`kyc.svg`** (2026-10-16): descargado del encabezado del sitio de la marca en Argentina, `kyc.com.ar/wp-content/uploads/2025/05/Capa_1.svg`, sin cambios (SVG de 18 KB, emblema rojo y letras «KYC», sin la marca de ningún distribuidor, sin scripts ni enlaces externos; se revisó antes de copiarlo). Es la versión en color para fondo claro; la del pie del sitio es blanca (para fondo oscuro) y no se usa. Es un logo de una marca registrada de un tercero: aplica la misma condición de uso que los demás (ver abajo).
+
+Los siete de arriba, en `.png`, salen del repositorio público [car-logos-dataset](https://github.com/filippofilip95/car-logos-dataset) (carpeta `logos/optimized`), publicado con licencia MIT. **Esa licencia cubre el código del repositorio, no las marcas**: los logos son propiedad de sus fabricantes. Se descargaron el 2026-10-15, se recortó el espacio vacío y se redujeron de tamaño (el de SEAT original pesaba 600 KB).
 
 > TODO(verificar): que SUM pueda mostrar estas marcas en una pantalla para terceros. Para uso interno de SUM, que importa y distribuye estas marcas, lo normal es poder hacerlo, pero la decisión y las guías de cada marca (proporciones, sin filtros ni deformaciones) son de SUM, no de este repositorio. Si se prefiere, se sustituyen por los logos de la biblioteca de marca de SUM con el mismo nombre de archivo.
 

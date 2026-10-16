@@ -79,6 +79,8 @@ El volumen esperado es de 100 a 500 órdenes diarias (comentario del propio `tra
 
 La web no pagina: pide la lista entera al abrir y cada vez que el coordinador pulsa «Actualizar» (no hay renovación automática). Si el volumen lo exige, habrá que acordar paginación o ventana.
 
+**Ampliación del 2026-10-16 (filtro por fecha, [ADR 0014](../06-decisiones/0014-filtro-por-fecha-del-coordinador-rango-al-servidor-y-abre-en-hoy.md)):** el mismo endpoint acepta `desde` y `hasta` **opcionales** (días de Lima, `AAAA-MM-DD`, los dos a la vez, ambos incluidos). Con ellos devuelve solo lo que **pasó** esos días: órdenes `en_transito`, `realizado` o `cerrada` cuya **salida o entrega** se registró en alguno de ellos. No entran las pendientes ni las canceladas. Responde **422** si falta uno de los dos, si van al revés, si `hasta` es futuro o si el rango pasa de 90 días. Sin parámetros todo sigue como arriba. El contrato de cada traslado no cambia. La web abre pidiendo «hoy».
+
 ### 4. Qué NO debe devolver
 
 Conductor (nombre, usuario o DNI), placa rotativa, dispositivo GPS, velocidad, rumbo, incidencias, fotos, ubicación. La web ya descarta cualquier campo no listado, pero **el servidor no debe mandarlos**: una lista cerrada, no el modelo del supervisor, para que un campo interno nuevo no se filtre por accidente. La ubicación en el mapa es una fase posterior y llevará su propio contrato.
@@ -128,7 +130,7 @@ Siguiendo `tests/test_rol_gerencia.py`:
 
 ## Puntos abiertos
 
-1. La ventana de días (punto 3) y si hace falta paginar. **Implementado:** pendientes de hoy, todas las en tránsito y entregadas, cerradas o canceladas de los últimos 7 días (`VENTANA_DIAS`); sin paginar.
+1. La ventana de días (punto 3) y si hace falta paginar. **Implementado:** pendientes de hoy, todas las en tránsito y entregadas, cerradas o canceladas de los últimos 7 días (`VENTANA_DIAS`); sin paginar. **Ampliado el 2026-10-16:** con `desde` y `hasta` se pide un rango de hasta 90 días (ver arriba).
 2. ~~Cómo distinguir una entrega con hora estimada (`entrega_estimada`).~~ **No se envía** (2026-10-15): la base no marca las entregas cerradas a mano; la web toma toda hora como medida.
 3. **El hueco de `require_auth`:** un coordinador podrá llamar cualquier endpoint que solo exija sesión (por ejemplo `GET /storage/signed-url/{key}` o `/vehiculo/ubicacion/{vin}`). Es el mismo hueco que ya anota `sum-portal-front/documents/migraciones/diagnostico-arquitectura-erp.md` §1.2. Antes de dar cuentas reales conviene cerrar al menos los que devuelven datos de vehículos. No forma parte de este pedido, pero lo condiciona.
 4. Datos personales: validar con el área legal si la ubicación llegara a mostrarse a terceros.
