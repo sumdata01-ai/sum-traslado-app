@@ -1,9 +1,11 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import {
+  DESTINOS_OCULTOS,
   claveMarca,
   contarPorEtapa,
   destinosDe,
+  esDestinoOculto,
   filtrarTraslados,
   formatoFecha,
   hitosDe,
@@ -206,6 +208,44 @@ describe('orden y filtros', () => {
     expect(lista.filter(esVisible).map((t) => t.idOrden)).toEqual([1, 2, 3, 5])
     expect(esVisible({ etapa: 'anulado' })).toBe(false)
     for (const etapa of ['en_planta', 'en_camino', 'entregado'] as const) expect(esVisible({ etapa })).toBe(true)
+  })
+
+  it('los destinos PLANETA y SATELITAL no se muestran, sea cual sea la etapa; los demás sí', () => {
+    const lista2 = [
+      traslado({ idOrden: 1, destino: 'Sede Norte' }),
+      traslado({ idOrden: 2, destino: 'PLANETA', etapa: 'en_camino' }),
+      traslado({ idOrden: 3, destino: 'SATELITAL', etapa: 'entregado', entregadoEn: '2026-10-15T16:00:00Z' }),
+      traslado({ idOrden: 4, destino: 'Sede Sur' }),
+      traslado({ idOrden: 5, destino: 'Satelital', etapa: 'en_planta', salidaRegistrada: null }),
+    ]
+    expect(lista2.filter(esVisible).map((t) => t.idOrden)).toEqual([1, 4])
+    expect(destinosDe(lista2.filter(esVisible))).toEqual(['Sede Norte', 'Sede Sur']) // ni siquiera aparecen en el selector
+  })
+
+  it('un traslado sin destino sigue a la vista (se muestra como «Sin destino»)', () => {
+    expect(esVisible({ etapa: 'en_camino', destino: null })).toBe(true)
+    expect(esVisible({ etapa: 'en_camino' })).toBe(true)
+    expect(esVisible({ etapa: 'en_camino', destino: '' })).toBe(true)
+  })
+
+  it('un traslado anulado sigue oculto aunque su destino no lo esté', () => {
+    expect(esVisible({ etapa: 'anulado', destino: 'Sede Norte' })).toBe(false)
+  })
+
+  it('el destino es el nombre ENTERO: ni mayúsculas, ni tildes ni espacios de más lo cambian, pero una parte del nombre no cuenta', () => {
+    for (const destino of ['Planeta', 'PLANETA', 'planeta', ' Planeta ', 'Satelital', 'SATELITAL', 'satélital', 'Satélital', 'SATELITAL  ']) {
+      expect(esDestinoOculto(destino), destino).toBe(true)
+    }
+    for (const destino of ['Sede Satelital', 'Planeta Norte', 'Satelital Sur', 'Plane', 'Satelite', 'Sede Planeta', 'SATELITALES']) {
+      expect(esDestinoOculto(destino), destino).toBe(false)
+    }
+    expect(esDestinoOculto(null)).toBe(false)
+    expect(esDestinoOculto(undefined)).toBe(false)
+    expect(esDestinoOculto('')).toBe(false)
+  })
+
+  it('la lista de destinos ocultos es exactamente PLANETA y SATELITAL', () => {
+    expect([...DESTINOS_OCULTOS]).toEqual(['PLANETA', 'SATELITAL'])
   })
 
   it('el destino filtra por nombre exacto', () => {

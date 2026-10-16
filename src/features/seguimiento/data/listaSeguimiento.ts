@@ -1,6 +1,6 @@
 import { ApiError } from '@/core/http/ApiError'
 import type { ResultadosVinesLeidos, SeguimientoApi } from '../api/seguimientoApi'
-import type { TrasladoSeguimiento } from '../domain'
+import { type RangoFechas, type TrasladoSeguimiento, diaDeLima, errorDeRango, rangoDePreset } from '../domain'
 
 export interface InstantaneaSeguimiento {
   /** Todavía no hubo ninguna respuesta (ni error): es la primera carga. */
@@ -18,9 +18,12 @@ export interface InstantaneaSeguimiento {
   readonly descartados: number
   /** Cuándo llegó la última lista (milisegundos), o `null` si todavía no llegó ninguna. */
   readonly actualizadoEn: number | null
+  /** Los días (de Lima) que se están mostrando. Al abrir es «hoy»; cambia con `aplicarRango`. */
+  readonly rango: RangoFechas
 }
 
-const INICIAL: InstantaneaSeguimiento = {
+/** El estado de antes de recibir nada, con el rango de «hoy» (el día de Lima dado). */
+const inicial = (hoy: string): InstantaneaSeguimiento => ({
   cargando: true,
   actualizando: false,
   sinConexion: false,
@@ -29,7 +32,10 @@ const INICIAL: InstantaneaSeguimiento = {
   traslados: [],
   descartados: 0,
   actualizadoEn: null,
-}
+  rango: rangoDePreset('hoy', hoy),
+})
+
+const mismoRango = (a: RangoFechas, b: RangoFechas): boolean => a.desde === b.desde && a.hasta === b.hasta
 
 /**
  * La lista de traslados del coordinador. **Solo vive en memoria**: son datos de operación de otras personas y no se
@@ -38,12 +44,16 @@ const INICIAL: InstantaneaSeguimiento = {
  *
  * Un fallo (de red o del servidor) nunca vacía lo que ya se muestra. Los datos son de la persona que inició sesión:
  * si entra otra, o se cierra la sesión, se vacían.
+ *
+ * **El filtro por fecha** (2026-10-16): al abrir se pide «hoy» (el día de Lima) y `aplicarRango` pide otro rango al servidor.
+ * Al cambiar de rango se vacía lo mostrado y se descarta lo que llegue del rango anterior: mostrar los traslados de un día
+ * bajo el rótulo de otro sería peor que esperar. «Actualizar» pide de nuevo **el mismo rango**.
  */
 export class ListaSeguimiento {
   readonly #api: SeguimientoApi
   readonly #reloj: () => number
 
-  #instantanea: InstantaneaSeguimiento = INICIAL
+  #instantanea: InstantaneaSeguimiento
   readonly #escuchas = new Set<() => void>()
   #generacion = 0
   #actualizacion: Promise<void> | null = null
@@ -52,6 +62,11 @@ export class ListaSeguimiento {
   constructor(opciones: { api: SeguimientoApi; reloj?: () => number }) {
     this.#api = opciones.api
     this.#reloj = opciones.reloj ?? Date.now
+    this.#instantanea = inicial(this.#hoy())
+  }
+
+  #hoy(): string {
+    return diaDeLima(this.#reloj())
   }
 
   readonly getSnapshot = (): InstantaneaSeguimiento => this.#instantanea
@@ -66,11 +81,26 @@ export class ListaSeguimiento {
   /**
    * Al abrir la pantalla: si lo que hay es de otra persona se vacía, y se pide lo último al servidor. `idUsuario` es el
    * de la sesión (puede ser `null` si el token no lo trae: entonces cualquier dato anterior se descarta por seguridad).
+   * Al abrir siempre se vuelve a «hoy»: si lo que quedó era de otro día, se cambia de rango (y se vacía) antes de pedir.
    */
   iniciar(idUsuario: number | null): Promise<void> {
     if (this.#dueno !== undefined && (this.#dueno !== idUsuario || idUsuario === null)) this.vaciar()
     this.#dueno = idUsuario
+    const hoy = rangoDePreset('hoy', this.#hoy())
+    if (!mismoRango(this.#instantanea.rango, hoy)) this.#fijarRango(hoy)
     return this.actualizar()
+  }
+
+  /**
+   * El botón «Aplicar» del filtro por fecha: pide ese rango al servidor. Un rango que el servidor rechazaría (futuro, al
+   * revés, de más de 90 días) no se pide: devuelve el motivo para decirlo. Con el mismo rango que ya se muestra solo
+   * actualiza, sin vaciar nada.
+   */
+  aplicarRango(rango: RangoFechas): Promise<string | null> {
+    const error = errorDeRango(rango.desde, rango.hasta, this.#hoy())
+    if (error) return Promise.resolve(error)
+    if (!mismoRango(this.#instantanea.rango, rango)) this.#fijarRango(rango)
+    return this.actualizar().then(() => null)
   }
 
   /** Pide la lista al servidor. Una sola petición a la vez. */
@@ -103,15 +133,36 @@ export class ListaSeguimiento {
     this.#generacion++
     this.#actualizacion = null
     this.#dueno = undefined
-    this.#instantanea = INICIAL
+    this.#instantanea = inicial(this.#hoy())
     for (const escucha of [...this.#escuchas]) escucha()
+  }
+
+  /**
+   * Cambia el rango mostrado: vacía la lista, vuelve a «cargando» y deja sin efecto cualquier petición del rango anterior
+   * (subir la generación hace que lo que conteste después se descarte).
+   */
+  #fijarRango(rango: RangoFechas): void {
+    this.#generacion++
+    this.#actualizacion = null
+    this.#publicar({
+      rango,
+      cargando: true,
+      actualizando: false,
+      sinConexion: false,
+      error: null,
+      sinPermiso: null,
+      traslados: [],
+      descartados: 0,
+      actualizadoEn: null,
+    })
   }
 
   async #pedir(): Promise<void> {
     const generacion = this.#generacion
+    const { rango } = this.#instantanea
     this.#publicar({ actualizando: true })
     try {
-      const { traslados, descartados } = await this.#api.traslados()
+      const { traslados, descartados } = await this.#api.traslados(rango)
       if (generacion !== this.#generacion) return
       this.#publicar({
         cargando: false,

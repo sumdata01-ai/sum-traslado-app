@@ -26,3 +26,4 @@ Pares a evitar como texto por contraste insuficiente: `ink-3` sobre `page` y `in
 - El color acompaña al texto, nunca lo reemplaza.
 - Accesibilidad comprobada con `vitest-axe` y patrón combobox en los selectores.
 - Diseño pensado para 360 px de ancho (`max-w-md` centrado).
+- **Esqueletos de carga** (`EsqueletoTraslados`, vista del coordinador, 2026-10-16): barras `bg-line` con la **misma silueta** de lo que va a aparecer y el lugar reservado de lo que aparece después (pestañas, selector de destino), para que al llegar los datos nada se mueva. Son solo dibujo: `aria-hidden`, nada enfocable, y un único aviso de estado (`role="status"`, texto solo para lector de pantalla). Laten con `animate-pulse` y **no se animan con `motion-reduce`**. Un esqueleto se usa solo cuando **no hay nada que mostrar**: si ya hay datos (por ejemplo, «Actualizar»), se conservan a la vista.

@@ -213,7 +213,7 @@ Una historia está terminada cuando:
 
 ## 12. Avance
 
-### Backend (rama `feat/dashboard-llegada-qr` de `sum-bck-modulos`) — hecho el 2026-10-16, sin commitear
+### Backend (rama `feat/dashboard-llegada-qr` de `sum-bck-modulos`) — hecho el 2026-10-16, mezclado a su `main` local (`c2e83c5`), sin subir a GitHub ni desplegar
 
 | Historia | Estado |
 |---|---|
@@ -231,7 +231,7 @@ Una historia está terminada cuando:
 
 **No se hizo:** nada en producción (ni el backend, ni Cloud Run); no se probó con un cliente HTTP real contra `:8050`; no se sembró nada en la base local fuera de las pruebas (que se revierten).
 
-### Web — hecha el 2026-10-16, con servidores falsos
+### Web — hecha el 2026-10-16, con servidores falsos; publicada en `origin/main` (`eee4346`)
 
 | Historia | Estado |
 |---|---|
@@ -247,4 +247,4 @@ Una historia está terminada cuando:
 
 **No se hizo:** probar la web con el backend real (ni el local), en un teléfono, con un lector de pantalla ni con una cuenta real de cada par; desplegar el backend en Cloud Run (lo hace el usuario).
 
-**Consecuencia a tener presente:** hasta que el backend esté desplegado, el tablero muestra un error y **esas personas no tienen Traslado** en esta web.
+**Consecuencia a tener presente:** la web ya está publicada; hasta que el backend esté desplegado, el tablero muestra un error y **esas personas no tienen Traslado** en esta web. El despliegue de Vercel no se comprobó.

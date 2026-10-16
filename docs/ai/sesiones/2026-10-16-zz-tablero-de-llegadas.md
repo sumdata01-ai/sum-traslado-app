@@ -10,7 +10,7 @@ Construir el tablero de solo lectura de llegadas por QR para supervisores, **pri
 ## Cambios realizados (archivos)
 **Backend (`sum-bck-modulos`, rama `feat/dashboard-llegada-qr`, mezclada a su `main` local en `c2e83c5`; sin subir):** `app/api/v1/llegada_qr.py`, `app/schemas/llegada_qr_lectura.py`, `app/services/llegada_qr_lectura_service.py`, `app/repositories/llegada_qr_lectura_repository.py`, el guard `require_llegada_qr_lector` en `app/api/deps.py`, `app/api/router.py`, `ENDPOINTS.md`, `scripts/sembrar_llegadas_demo.py` y las pruebas `test_llegada_qr_lectura.py` y `test_sembrar_llegadas_demo.py` (142).
 
-**Web (esta rama `feature/dashboard-llegadas`):**
+**Web (rama `feature/dashboard-llegadas`, mezclada a `main` y subida: commits `d7f3754` y `cb129f7`, merge `eee4346`):**
 - `src/features/tablero-llegadas/` (dominio, API con zod, store `TableroLlegadas`, componentes, dobles con los datos del apéndice) y `src/app/TableroLlegadasPage.tsx`.
 - `src/core/navegacion/ruta.ts` (la ruta del navegador), `puedeVerTablero` en `src/core/auth/sesion.ts`, `AppShell`, `App`, `composicion.ts` y `main.tsx`.
 - Un cambio menor en la vista del coordinador: `PanelDetalle` acepta un nombre para el lector de pantalla.
@@ -46,17 +46,18 @@ Las del usuario, arriba. Mías, sujetas a revisión:
 
 **No se hizo:**
 - **Nada contra el backend real**: la web solo se probó con servidores falsos y el backend solo con pruebas contra la réplica local; no se probaron juntos.
-- **No se desplegó el backend** (lo hace el usuario) ni se subió a GitHub antes de esta sesión de cierre.
+- **No se desplegó el backend** (lo hace el usuario) **ni se subió a GitHub**: solo está mezclado en la `main` **local** de `sum-bck-modulos` (`c2e83c5`). La web está **publicada en `origin/main`** (merge `eee4346`, a pedido del usuario: «pushea lo trabajado hacia main para desplegar»); Vercel despliega cada push a `main`, pero **no se comprobó que el despliegue haya terminado ni cómo se ve**.
 - No se probó en un teléfono ni con un lector de pantalla, ni con una cuenta real de cada par.
 - No se probó con volumen real (el servidor recorta a 500 filas).
 
 ## Pendientes / siguiente paso
-- **Desplegar el backend en Cloud Run** (lo hace el usuario). Sin él, el tablero muestra un error y esas personas **no tienen Traslado**.
+- **Subir el backend a GitHub y desplegarlo en Cloud Run** (lo hace el usuario). Sin él, el tablero publicado muestra un error y esas personas **no tienen Traslado** (la web ya está en `origin/main`).
 - Probar con el backend local y los datos sembrados (`scripts/sembrar_llegadas_demo.py`), en un teléfono y con una cuenta real de cada par.
+- Comprobar que el despliegue de Vercel terminó y que `/dashboard` abre (recarga incluida) en la dirección publicada.
 - Decidir si la fila con flag conserva su raya ámbar.
 - `ENDPOINTS.md` del backend sigue sin listar `POST /mobile/llegadas` ni los endpoints del coordinador.
 
-**Siguiente paso concreto:** desplegar el backend y entrar a `/dashboard` con `s.despacho` (o `matias`) para comprobar que ve las cifras reales; si algo falla, lo primero que mirar es el 404 de `/api/llegada-qr/dia` (backend sin desplegar).
+**Siguiente paso concreto:** subir `main` de `sum-bck-modulos` y desplegarlo; luego entrar a `/dashboard` con `s.despacho` (o `matias`) para comprobar que ve las cifras reales; si algo falla, lo primero que mirar es el 404 de `/api/llegada-qr/dia` (backend sin desplegar).
 
 ## Aprendizajes a llevar a memoria
 Pasados a `docs/ai/`: correr los barridos largos sobre una copia, y la E2E que no fija el día ([convenciones.md](../convenciones.md)); el comando de la E2E del tablero ([comandos.md](../comandos.md)).

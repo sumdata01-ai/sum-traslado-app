@@ -190,6 +190,27 @@ describe('consulta masiva de VIN: contrato', () => {
     expect((await api.consultarVines([VIN_A])).resultados).toEqual([{ vin: VIN_A, informacion: 'pendiente' }])
   })
 
+  it.each(['PLANETA', 'Satelital', 'SATELITAL'])('un VIN «disponible» cuyo destino es «%s» se muestra como pendiente: no se enseña un destino oculto', async (destino) => {
+    const { api } = montar(() => json(200, { resultados: [{ vin: VIN_A, informacion: 'disponible', traslado: crudo({ destino }) }] }))
+    expect((await api.consultarVines([VIN_A])).resultados).toEqual([{ vin: VIN_A, informacion: 'pendiente' }])
+  })
+
+  it('en la misma consulta, el de un destino oculto sale pendiente y los demás con su información, en el mismo orden', async () => {
+    const { api } = montar(() =>
+      json(200, {
+        resultados: [
+          { vin: VIN_A, informacion: 'disponible', traslado: crudo({ destino: 'Sede Norte' }) },
+          { vin: VIN_B, informacion: 'disponible', traslado: crudo({ id_orden: 9002, vin: VIN_B, destino: 'PLANETA' }) },
+        ],
+      }),
+    )
+    const { resultados } = await api.consultarVines([VIN_A, VIN_B])
+    expect(resultados.map((r) => [r.vin, r.informacion])).toEqual([
+      [VIN_A, 'disponible'],
+      [VIN_B, 'pendiente'],
+    ])
+  })
+
   it('un VIN «disponible» sin traslado válido se muestra como pendiente (no se pierde el VIN)', async () => {
     const { api } = montar(() =>
       json(200, {

@@ -45,7 +45,8 @@ Punto de entrada del repositorio: [README.md](../README.md). Memoria para sesion
 [0010 galería y escáner](06-decisiones/0010-galeria-y-escaner-con-jpeg-verificado.md) ·
 [0011 vista del coordinador](06-decisiones/0011-vista-del-coordinador-por-rol-solo-lectura-y-en-memoria.md) ·
 [0012 llegada por QR](06-decisiones/0012-marcacion-de-llegada-por-qr-solo-lado-conductor-y-solo-con-internet.md) ·
-[0013 tablero de llegadas](06-decisiones/0013-tablero-de-llegadas-en-esta-web-por-rol-y-area-en-dashboard.md)
+[0013 tablero de llegadas](06-decisiones/0013-tablero-de-llegadas-en-esta-web-por-rol-y-area-en-dashboard.md) ·
+[0014 filtro por fecha del coordinador](06-decisiones/0014-filtro-por-fecha-del-coordinador-rango-al-servidor-y-abre-en-hoy.md)
 
 ## 07 · Planificación
 - [estado-actual.md](07-planificacion/estado-actual.md): resumen y fuente de cada cosa.

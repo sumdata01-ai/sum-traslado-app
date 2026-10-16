@@ -19,6 +19,7 @@ Todos salen de `package.json` o se usaron en las sesiones de trabajo. Se ejecuta
 | E2E (todas) | `npm run test:e2e` (puede pasar el límite de logins) |
 | Un archivo E2E en Chrome | `npx playwright test e2e/home.spec.ts --project=chrome` |
 | E2E **sin backend** (vista del coordinador; segura con `:8050` encendido, no gasta logins) | `npx playwright test e2e/seguimiento.spec.ts --project=chrome` (o `edge`); añade `--headed` para verla en pantalla |
+| E2E con el puerto 5173 **ocupado por otra aplicación** (Playwright reutilizaría esa y probaría la equivocada) | Arrancar este proyecto en otro puerto y apuntar ahí una configuración **temporal fuera del repositorio**: `npx vite --port 5199 --strictPort` y, con un `playwright.*.config.cjs` en la carpeta temporal de la sesión que use `baseURL: 'http://localhost:5199'`, `testDir` absoluto a `e2e/` y `require` del `@playwright/test` del proyecto: `npx playwright test --config <ese archivo> --project=chrome`. Al terminar, detener el servidor propio (no el de la otra aplicación) |
 | E2E de «Marcar llegada» (sin backend, con lector de QR real y ubicación simulada; segura con `:8050` encendido) | `npx playwright test e2e/llegada.spec.ts --project=chrome` (o `edge`) |
 | E2E del tablero de llegadas (sin backend; segura con `:8050` encendido) | `npx playwright test e2e/tablero.spec.ts --project=chrome` (o `edge`) |
 | Capturas de esa E2E | Con la variable `SEGUIMIENTO_CAPTURAS=<carpeta fuera del repositorio>` antes del comando |
@@ -36,6 +37,7 @@ venv\Scripts\python -m uvicorn main:app --port 8050 --reload
 | Pruebas del backend contra la réplica local | `$env:TEST_DB_PORT=5434; python -m pytest tests -q` (sin la variable usa el puerto 5433) |
 | Una rama aparte sin tocar la carpeta principal | `git worktree add ..\sum-bck-modulos-<tema> -b <rama> refs/remotes/origin/main`; el `venv` de la carpeta principal sirve (`<principal>\venv\Scripts\python.exe -m pytest …`) |
 | Comparar una suite antes de un merge | Dos copias temporales con `git worktree add --detach <ruta corta> <rama>` (base y mezcla), la suite en cada una con `-rf`, y comparar las líneas `FAILED` |
+| Datos de ejemplo del tablero de llegadas, **solo en la réplica local** (con las variables `DB_*` de la réplica) | Desde el backend: `python scripts\sembrar_llegadas_demo.py` (simula) y `... --aplicar --destino sum_test` (siembra hoy de Lima); `--quitar --aplicar --destino sum_test` los borra. Se niega si el host no es `localhost` o la base no contiene «test». |
 | Nombre de la rama remota | Usar la ruta completa `refs/remotes/origin/main`: `origin/main` a secas falló en `git rev-parse` |
 
 ## Git: dos tropiezos en Windows

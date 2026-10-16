@@ -1,5 +1,6 @@
 import { ApiError } from '@/core/http/ApiError'
 import type { ApiClient } from '@/core/http/apiClient'
+import { type RangoFechas, trasladoEnRango } from '../domain'
 import { type ResultadosVinesLeidos, type TrasladosLeidos, aResultadosVines, aTraslados } from './schemas'
 
 export type { ResultadosVinesLeidos, TrasladosLeidos } from './schemas'
@@ -17,8 +18,12 @@ export interface SeguimientoApi {
    * versión, 2026-10-15). Solo el rol `coordinador`; otro rol recibe 403.
    *
    * El prefijo es `/api` y no `/v1` a propósito: esta web solo reenvía `/api` y `/mobile` al backend (ADR 0003).
+   *
+   * Con `rango` (días de Lima, ambos incluidos) pide `?desde=…&hasta=…` y el servidor trae solo lo que **pasó** esos días
+   * (una salida o una entrega registrada), en camino o entregado; sin él, la lista de siempre (2026-10-16). El servidor
+   * responde 422 si el rango es futuro, al revés o de más de 90 días: la web lo comprueba antes (`errorDeRango`).
    */
-  traslados(): Promise<TrasladosLeidos>
+  traslados(rango?: RangoFechas): Promise<TrasladosLeidos>
 
   /**
    * `POST /api/seguimiento/consulta-vines`: el estado de varios VIN a la vez (hasta 200), de cualquier fecha. Solo cuentan
@@ -29,15 +34,17 @@ export interface SeguimientoApi {
 
 export function crearSeguimientoApi(cliente: ApiClient): SeguimientoApi {
   return {
-    async traslados() {
+    async traslados(rango) {
       const cuerpo = await cliente.getJson<unknown>('/api/seguimiento/traslados', {
         ...OPCIONES_SEGUIMIENTO,
+        ...(rango ? { query: { desde: rango.desde, hasta: rango.hasta } } : {}),
         fallbackError: 'No se pudieron traer los traslados.',
       })
       const leidos = aTraslados(cuerpo)
       // Sin `status` sería indistinguible de una red caída y mostraría «sin conexión» por error.
       if (!leidos) throw new ApiError('Respuesta inesperada del servidor.', { status: 502 })
-      return leidos
+      // Con un rango, solo lo que pertenece a él: un servidor que no conozca `desde` y `hasta` los ignora y manda la lista de siempre.
+      return rango ? { ...leidos, traslados: leidos.traslados.filter((traslado) => trasladoEnRango(traslado, rango)) } : leidos
     },
 
     async consultarVines(vines) {

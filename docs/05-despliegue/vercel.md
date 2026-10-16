@@ -5,6 +5,7 @@
 ## Estado
 
 - Repositorio: `sumdata01-ai/sum-traslado-app` (rama `main`). Vercel despliega cada push a `main`.
+- **Rutas de la web:** el rewrite `/(.*)` → `index.html` es lo que hace que `/dashboard` (el tablero de llegadas, [ADR 0013](../06-decisiones/0013-tablero-de-llegadas-en-esta-web-por-rol-y-area-en-dashboard.md)) abra al recargar o al entrar directo. Una ruta nueva no debe empezar por `/api` ni `/mobile`. Esa vista pide `/api/llegada-qr/*`, que reenvía al Cloud Run de producción: **necesita el backend nuevo desplegado**.
 - Despliegue actual: **https://sum-traslado-app.vercel.app/**.
 - Framework «Vite». **No hay variables de entorno** en Vercel.
 

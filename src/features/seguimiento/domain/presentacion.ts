@@ -148,11 +148,26 @@ export function contarPorEtapa(traslados: readonly Pick<TrasladoSeguimiento, 'et
 }
 
 /**
- * ¿Se muestra este traslado al coordinador? **Las órdenes anuladas no** (2026-10-15, a pedido del usuario: ver una orden
- * anulada en la lista confunde y no hay nada que seguir). El servidor puede seguir mandándolas: la web las descarta aquí,
- * antes de armar la lista, el selector de destinos y los conteos, para que no aparezcan por ningún camino.
+ * Los destinos cuyos vehículos **no se muestran** al coordinador (2026-10-16, a pedido del usuario): `PLANETA` y `SATELITAL`.
+ * Se comparan **enteros** y sin importar mayúsculas, tildes ni espacios de más («Satelital», «SATELITAL» y « satelital » son el
+ * mismo), no por parte: un destino «Sede Satelital Norte» no se oculta. Para cambiar la lista basta con editar esta.
  */
-export const esVisible = (t: Pick<TrasladoSeguimiento, 'etapa'>): boolean => t.etapa !== 'anulado'
+export const DESTINOS_OCULTOS = ['PLANETA', 'SATELITAL'] as const
+
+const claveDeDestino = normalizarTexto // minúsculas, sin tildes y sin espacios en los extremos
+const CLAVES_DE_DESTINOS_OCULTOS: ReadonlySet<string> = new Set(DESTINOS_OCULTOS.map(claveDeDestino))
+
+/** ¿Este destino es de los que no se muestran? Un traslado sin destino (`null`) no lo es: sigue a la vista como «Sin destino». */
+export const esDestinoOculto = (destino: string | null | undefined): boolean => !!destino && CLAVES_DE_DESTINOS_OCULTOS.has(claveDeDestino(destino))
+
+/**
+ * ¿Se muestra este traslado al coordinador? **Las órdenes anuladas no** (2026-10-15, a pedido del usuario: ver una orden
+ * anulada en la lista confunde y no hay nada que seguir) **ni las de un destino oculto** (`PLANETA`, `SATELITAL`; 2026-10-16).
+ * El servidor puede seguir mandándolas: la web las descarta aquí, antes de armar la lista, el selector de destinos y los
+ * conteos, y también en la consulta masiva (donde un VIN así sale como «pendiente de información»), para que no aparezcan por
+ * ningún camino.
+ */
+export const esVisible = (t: Pick<TrasladoSeguimiento, 'etapa'> & { destino?: string | null }): boolean => t.etapa !== 'anulado' && !esDestinoOculto(t.destino)
 
 /** Los destinos distintos, por orden alfabético, para el selector. */
 export function destinosDe(traslados: readonly TrasladoSeguimiento[]): string[] {
