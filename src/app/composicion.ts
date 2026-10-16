@@ -10,6 +10,8 @@ import { createApiClient } from '@/core/http'
 import { crearLlegadaApi } from '@/features/llegada/api/llegadaApi'
 import { crearSeguimientoApi } from '@/features/seguimiento/api/seguimientoApi'
 import { ListaSeguimiento } from '@/features/seguimiento/data/listaSeguimiento'
+import { crearTableroApi } from '@/features/tablero-llegadas/api/tableroApi'
+import { TableroLlegadas } from '@/features/tablero-llegadas/data/tableroLlegadas'
 import { crearStorageApi } from '@/features/traslado/api/storageApi'
 import { crearTrasladoApi } from '@/features/traslado/api/trasladoApi'
 import { ConfirmacionTraslado } from '@/features/traslado/data/confirmacionTraslado'
@@ -62,6 +64,9 @@ export const seguimiento = new ListaSeguimiento({ api: crearSeguimientoApi(api) 
 
 /** Marcación de llegada por QR (lado del conductor): solo con internet, no guarda nada en el teléfono. */
 export const llegada = { api: crearLlegadaApi(api) }
+
+/** Tablero de llegadas por QR (`/dashboard`): solo lectura y solo en memoria (sin Dexie). */
+export const tablero = new TableroLlegadas({ api: crearTableroApi(api) })
 
 /** E4-01: las fotos tomadas (en este teléfono) y su subida a GCS: cada una se sube al tomarla. */
 export const fotos = (() => {

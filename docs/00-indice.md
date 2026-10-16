@@ -1,6 +1,6 @@
 # Índice de la documentación
 
-Última actualización: 2026-10-15 | Fuente: docs/ | Estado: vigente
+Última actualización: 2026-10-16 | Fuente: docs/ | Estado: vigente
 
 Punto de entrada del repositorio: [README.md](../README.md). Memoria para sesiones con LLM: [CLAUDE.md](../CLAUDE.md) y [AGENTS.md](../AGENTS.md).
 
@@ -8,6 +8,7 @@ Punto de entrada del repositorio: [README.md](../README.md). Memoria para sesion
 - [vision-y-alcance.md](01-vision-y-alcance/vision-y-alcance.md): qué es, qué hace hoy y endpoints que usa.
 - [patron-traslado-web.md](01-vision-y-alcance/patron-traslado-web.md): contrato de datos y desenlaces (referencia, del 2026-10-09).
 - [marcacion-llegada-qr.md](01-vision-y-alcance/marcacion-llegada-qr.md): la marcación de llegada por QR del conductor (L-01): qué hace, el contrato y lo que no se probó.
+- [tablero-llegadas-qr.md](01-vision-y-alcance/tablero-llegadas-qr.md): el tablero de solo lectura (`/dashboard`) para supervisores: orden de llegada y distancia, rechazos y puntos.
 - [propuesta-vista-cliente.md](01-vision-y-alcance/propuesta-vista-cliente.md): propuesta (borrador) de una vista para que el cliente siga sus vehículos: PDI, en camino, GPS y ubicación.
 
 ## 02 · Arquitectura
@@ -43,11 +44,13 @@ Punto de entrada del repositorio: [README.md](../README.md). Memoria para sesion
 [0009 Vercel contra producción](06-decisiones/0009-vercel-contra-produccion-solo-para-ver.md) ·
 [0010 galería y escáner](06-decisiones/0010-galeria-y-escaner-con-jpeg-verificado.md) ·
 [0011 vista del coordinador](06-decisiones/0011-vista-del-coordinador-por-rol-solo-lectura-y-en-memoria.md) ·
-[0012 llegada por QR](06-decisiones/0012-marcacion-de-llegada-por-qr-solo-lado-conductor-y-solo-con-internet.md)
+[0012 llegada por QR](06-decisiones/0012-marcacion-de-llegada-por-qr-solo-lado-conductor-y-solo-con-internet.md) ·
+[0013 tablero de llegadas](06-decisiones/0013-tablero-de-llegadas-en-esta-web-por-rol-y-area-en-dashboard.md)
 
 ## 07 · Planificación
 - [estado-actual.md](07-planificacion/estado-actual.md): resumen y fuente de cada cosa.
 - [backlog.md](07-planificacion/backlog.md) · [plan-sprints.md](07-planificacion/plan-sprints.md) · [TODO.md](../TODO.md) (lista viva)
+- [plan-dashboard-llegadas.md](07-planificacion/plan-dashboard-llegadas.md): plan (borrador) del dashboard de llegadas por QR para supervisores: primero el backend, después la web; historias, sprints y compuerta.
 - [pedido-backend-vin-otras-ordenes.md](07-planificacion/pedido-backend-vin-otras-ordenes.md): pedido al backend para decir que una orden ya salió.
 - [pedido-backend-seguimiento-coordinador.md](07-planificacion/pedido-backend-seguimiento-coordinador.md): pedido al backend: el rol `coordinador` y el endpoint de seguimiento (contrato contra el que está construida la web).
 - [mapeo-rol-coordinador.md](07-planificacion/mapeo-rol-coordinador.md): mapeo del rol `coordinador` y de su acceso a la vista de seguimiento (cruza backend, portal, app y esta web).

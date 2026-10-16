@@ -1,6 +1,6 @@
 # Estructura de `src/`
 
-Última actualización: 2026-10-15 | Fuente: git ls-files src, eslint.config.js | Estado: vigente
+Última actualización: 2026-10-16 | Fuente: git ls-files src, eslint.config.js | Estado: vigente
 
 ```
 src/
@@ -8,6 +8,7 @@ src/
   index.css                   Tailwind 4 y tokens de color (única fuente de verdad)
   app/                        pantallas raíz y composición
   core/
+    navegacion/               la ruta del navegador (`useRuta`, `navegar`): solo para `/dashboard`
     auth/                     sesión: AuthPort, AuthCookie, canal entre pestañas, identidad del token
     config/                   URL base del API (relativa)
     http/                     cliente HTTP y ApiError
@@ -24,6 +25,11 @@ src/
     api/                      LlegadaApi (POST /mobile/llegadas, con su política de 403)
     data/                     ControladorLlegada (store externo), puerto de ubicación del navegador
     components/               EscanerQr (visor del QR, texto crudo) y el hook useLlegada
+  features/tablero-llegadas/  tablero de solo lectura del supervisor (`/dashboard`), solo en memoria
+    domain/                   formatos de Lima, días, motivos, filtros y la geometría del esquema
+    api/                      TableroApi (`/api/llegada-qr/*`, con su política de 403) y esquemas zod
+    data/                     TableroLlegadas (store externo, sin Dexie) y dobles con los datos del apéndice
+    components/               resumen, lista de llegadas, detalle, rechazados, puntos y useTablero
   features/seguimiento/       vista del rol coordinador (solo lectura, solo en memoria)
     domain/                   etapas, hitos, fechas en hora de Lima, filtros y orden (sin nada de GPS)
     api/                      SeguimientoApi y esquemas zod
@@ -36,7 +42,7 @@ src/
 
 | Carpeta | Contenido principal |
 |---|---|
-| `app/` | `App`, `AppShell` (decide la pantalla por la sesión), `HomePage`, `LlegadaPage`, `SeguimientoPage`, `CapturaPage`, `LoginPage`, `SinAccesoPage`, `SinConexionPage`, `SinPermisoPage`, `HerramientasDePrueba` y `PruebaCamara` (ocultas), `composicion.ts`. |
+| `app/` | `App`, `AppShell` (decide la pantalla por la sesión), `HomePage`, `LlegadaPage`, `TableroLlegadasPage`, `SeguimientoPage`, `CapturaPage`, `LoginPage`, `SinAccesoPage`, `SinConexionPage`, `SinPermisoPage`, `HerramientasDePrueba` y `PruebaCamara` (ocultas), `composicion.ts`. |
 | `core/auth/` | `AuthCookie` (login, refresh, logout), `canalSesion` (BroadcastChannel), `identidadToken`, `useSesion`. |
 | `core/http/` | `apiClient` (401 → renovar y reintentar una vez, política de 403, tiempo límite) y `ApiError`. |
 | `features/traslado/domain/` | `zonas`, `estadoFoto`, `estadoOrden`, `presentacionOrden`, `vin`, `confirmacion`, `tomas`, `elecciones`, `catalogo`, `mezclaCache`, `avance`, `formulario`, `orden`. |
@@ -46,6 +52,11 @@ src/
 | `features/llegada/api/` | `llegadaApi`: `registrar` (`POST /mobile/llegadas`; lee el `code` y el `motivo` del 400 con `request`, no con `postJson`) y `OPCIONES_LLEGADA` (un 403 no cierra la sesión). |
 | `features/llegada/data/` | `controladorLlegada` (máquina de estados del recorrido, store externo), `ubicacion` (`crearUbicacionDelNavegador`, `watchPosition` con `maximumAge: 0`) y `testing/fakes`. |
 | `features/llegada/components/` | `EscanerQr` y `useLlegada`. |
+| `core/navegacion/` | `ruta` (`RUTA_TABLERO`, `normalizarRuta`, `navegar`, `useRuta`). |
+| `features/tablero-llegadas/domain/` | `tablero` (los tipos de lo que manda el servidor) y `presentacion` (`horaLima`, días de Lima y el límite de 90, `textoDemora`, `textoAntiguedad`, `estadoDe`, `MOTIVOS`, `filtrarLlegadas`, `ordenarPorRecepcion`, `filtrarIntentos`, `esquemaDeUbicacion`). |
+| `features/tablero-llegadas/api/` | `tableroApi` (`dia`, `intentos`, `puntos`; `OPCIONES_TABLERO` para el 403) y `schemas` (zod: deja pasar solo lo que la pantalla usa; una fila mala se salta y se cuenta). |
+| `features/tablero-llegadas/data/` | `tableroLlegadas` (store en memoria: tres lecturas a la vez, una petición vigente, vacía al cambiar de persona) y `testing/fakes` (los datos del apéndice y una API que filtra como el servidor). |
+| `features/tablero-llegadas/components/` | `ResumenDelDia`, `ListaLlegadas`, `DetalleLlegada`, `ListaRechazados`, `FichasPuntos` y `useTablero`. |
 | `features/seguimiento/domain/` | `traslado` (tipos y pestañas), `presentacion` (`estadoGps`, `bloqueGps`, `hitosDe`, `formatoFecha`, `horaDeLima`, `filtrarTraslados`, `contarPorEtapa`, `esVisible`, `claveMarca`, `logoDeMarca`…) y `consulta` (`leerVines`, `resumirConsulta`, `ResultadoVin`). |
 | `features/seguimiento/api/` | `seguimientoApi` (`GET /api/seguimiento/traslados`, con su política de 403) y `schemas` (zod: deja pasar solo lo que la pantalla usa). |
 | `features/seguimiento/data/` | `listaSeguimiento` (store externo en memoria, una petición a la vez, vacía al cambiar de persona) y `testing/fakes`. |

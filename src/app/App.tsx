@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { type AuthPort, useSesion } from '@/core/auth'
 import type { ListaSeguimiento } from '@/features/seguimiento/data/listaSeguimiento'
+import type { TableroLlegadas } from '@/features/tablero-llegadas/data/tableroLlegadas'
 import type { ConfirmacionTraslado } from '@/features/traslado/data/confirmacionTraslado'
 import type { FotoStorePort } from '@/features/traslado/data/fotoStorePort'
 import type { SubidaFotos } from '@/features/traslado/data/subidaFotos'
@@ -11,6 +12,7 @@ import { AppShell } from './AppShell'
 import { HomePage } from './HomePage'
 import type { ConfigLlegada } from './LlegadaPage'
 import { SeguimientoPage } from './SeguimientoPage'
+import { TableroLlegadasPage } from './TableroLlegadasPage'
 
 export interface AppProps {
   auth: AuthPort
@@ -23,9 +25,11 @@ export interface AppProps {
   llegada?: ConfigLlegada
   /** La lista de la vista del coordinador. Sin ella, un coordinador ve «Sin acceso». */
   seguimiento?: ListaSeguimiento
+  /** El tablero de llegadas por QR (`/dashboard`). Sin él, nadie lo ve. */
+  tablero?: TableroLlegadas
 }
 
-export function App({ auth, lista, catalogo, identificador, fotos, llegada, seguimiento }: AppProps) {
+export function App({ auth, lista, catalogo, identificador, fotos, llegada, seguimiento, tablero }: AppProps) {
   const { estado } = useSesion(auth)
 
   // Las órdenes son de quien inició sesión: al cerrarla (o expirar) no deben verse desde otra cuenta.
@@ -39,6 +43,11 @@ export function App({ auth, lista, catalogo, identificador, fotos, llegada, segu
     if (estado === 'sinSesion') seguimiento?.vaciar()
   }, [estado, seguimiento])
 
+  // Y para el tablero de llegadas: son nombres y ubicaciones de conductores, solo en memoria y de quien inició sesión.
+  useEffect(() => {
+    if (estado === 'sinSesion') tablero?.vaciar()
+  }, [estado, tablero])
+
   // La `key` es la persona: si otra pestaña cambia el usuario (A-03), la home se rehace desde cero,
   // sin el filtro ni nada de lo que veía la anterior.
   return (
@@ -47,6 +56,11 @@ export function App({ auth, lista, catalogo, identificador, fotos, llegada, segu
       home={(sesion, cerrarSesion) => (
         <HomePage key={sesion.idUsuario ?? sesion.usuario ?? ''} sesion={sesion} lista={lista} catalogo={catalogo} identificador={identificador} fotos={fotos} llegada={llegada} onCerrarSesion={cerrarSesion} />
       )}
+      tablero={
+        tablero
+          ? (sesion, cerrarSesion) => <TableroLlegadasPage key={sesion.idUsuario ?? sesion.usuario ?? ''} sesion={sesion} tablero={tablero} onCerrarSesion={cerrarSesion} />
+          : undefined
+      }
       seguimiento={
         seguimiento
           ? (sesion, cerrarSesion) => <SeguimientoPage key={sesion.idUsuario ?? sesion.usuario ?? ''} sesion={sesion} lista={seguimiento} onCerrarSesion={cerrarSesion} />

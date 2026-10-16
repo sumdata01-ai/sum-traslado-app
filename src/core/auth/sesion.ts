@@ -21,3 +21,23 @@ export function tieneAcceso(sesion: Sesion | null, app: string = APP_TRASLADO): 
 export function esCoordinador(sesion: Sesion | null): boolean {
   return sesion?.role === ROL_COORDINADOR
 }
+
+/**
+ * Los pares (rol, área) que ven el tablero de llegadas por QR, **a pedido del usuario el 2026-10-16**: supervisor de
+ * Despacho, supervisor de Secado y asistente de Despacho; y `admin`, con cualquier área. Es el mismo criterio que el guard del
+ * backend (`LLEGADA_QR_LECTOR_PARES` en `app/api/deps.py`): se mira el **par**, no solo el rol (un asistente de otra área no
+ * entra). `secado_fisico` no entra. La comparación es exacta: «Supervisor» o «Despacho» no cuentan.
+ *
+ * Es solo para decidir qué pantalla mostrar: lo que de verdad cierra el paso es el servidor (responde 403 a cualquier otro).
+ */
+export const PARES_DEL_TABLERO: ReadonlyArray<readonly [string, string]> = [
+  ['supervisor', 'despacho'],
+  ['supervisor', 'secado'],
+  ['asistente', 'despacho'],
+]
+
+export function puedeVerTablero(sesion: Sesion | null): boolean {
+  if (!sesion) return false
+  if (sesion.role === 'admin') return true
+  return PARES_DEL_TABLERO.some(([role, area]) => sesion.role === role && sesion.area === area)
+}

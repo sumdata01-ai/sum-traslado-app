@@ -20,6 +20,7 @@ Todos salen de `package.json` o se usaron en las sesiones de trabajo. Se ejecuta
 | Un archivo E2E en Chrome | `npx playwright test e2e/home.spec.ts --project=chrome` |
 | E2E **sin backend** (vista del coordinador; segura con `:8050` encendido, no gasta logins) | `npx playwright test e2e/seguimiento.spec.ts --project=chrome` (o `edge`); añade `--headed` para verla en pantalla |
 | E2E de «Marcar llegada» (sin backend, con lector de QR real y ubicación simulada; segura con `:8050` encendido) | `npx playwright test e2e/llegada.spec.ts --project=chrome` (o `edge`) |
+| E2E del tablero de llegadas (sin backend; segura con `:8050` encendido) | `npx playwright test e2e/tablero.spec.ts --project=chrome` (o `edge`) |
 | Capturas de esa E2E | Con la variable `SEGUIMIENTO_CAPTURAS=<carpeta fuera del repositorio>` antes del comando |
 | Dependencias instaladas | `npm install` |
 

@@ -11,6 +11,7 @@ A 2026-10-15: **1608 pruebas en 73 archivos** (`npx vitest run --exclude "**/*.b
 | Dominio | `features/traslado/domain/*.test.ts` | Entorno `node`, sin dobles. |
 | API y esquemas | `features/traslado/api/*.test.ts` | `fetch` simulado; se comprueba el cuerpo exacto de cada petición. |
 | Controladores y almacenes | `features/traslado/data/*.test.ts` | Dobles en memoria; Dexie real sobre `fake-indexeddb`. |
+| Tablero de llegadas | `features/tablero-llegadas/**/*.test.ts`, `app/TableroLlegadasPage.test.tsx`, `app/App.tablero.test.tsx`, `core/navegacion/`, `core/auth/sesion.test.ts` | Dominio en `node` (horas de Lima, días, motivos, filtros, esquema); API con `fetch` simulado (rutas y parámetros exactos, política de 403, esquemas); store con una API de mentira que responde **los datos del apéndice** del spec y filtra como el servidor; página con `axe`; acceso por par y ruta en `App` con el servidor de sesión falso. |
 | Llegada por QR | `features/llegada/**/*.test.ts(x)`, `app/LlegadaPage.test.tsx`, `app/HomePage.llegada.test.tsx`, `app/App.llegada.test.tsx` | Dominio en `node`; API con `fetch` simulado (cuerpo exacto, política de 403); controlador con **temporizadores simulados** (`vi.useFakeTimers`), un GPS y un servidor falsos (`data/testing/fakes`) y el reloj inyectado; pantalla con cámara simulada. |
 | Cámara | `features/traslado/camera/*.test.ts(x)` | `CameraSession` con `FakeStream`, `FakeVideo`, `FakeDocument`. |
 | Componentes y pantallas | `components/*.test.tsx`, `app/*.test.tsx` | Testing Library + `user-event`. |
