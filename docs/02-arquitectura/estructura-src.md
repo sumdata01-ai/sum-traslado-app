@@ -19,6 +19,11 @@ src/
     data/                     controladores (stores externos), puertos y Dexie
     camera/                   sesión de cámara, captura, galería y escáner
     components/               componentes de la funcionalidad y sus hooks
+  features/llegada/           marcación de llegada por QR del conductor (solo en memoria)
+    domain/                   contrato del POST, fix de ubicación útil, hora de Lima
+    api/                      LlegadaApi (POST /mobile/llegadas, con su política de 403)
+    data/                     ControladorLlegada (store externo), puerto de ubicación del navegador
+    components/               EscanerQr (visor del QR, texto crudo) y el hook useLlegada
   features/seguimiento/       vista del rol coordinador (solo lectura, solo en memoria)
     domain/                   etapas, hitos, fechas en hora de Lima, filtros y orden (sin nada de GPS)
     api/                      SeguimientoApi y esquemas zod
@@ -31,12 +36,16 @@ src/
 
 | Carpeta | Contenido principal |
 |---|---|
-| `app/` | `App`, `AppShell` (decide la pantalla por la sesión), `HomePage`, `SeguimientoPage`, `CapturaPage`, `LoginPage`, `SinAccesoPage`, `SinConexionPage`, `SinPermisoPage`, `HerramientasDePrueba` y `PruebaCamara` (ocultas), `composicion.ts`. |
+| `app/` | `App`, `AppShell` (decide la pantalla por la sesión), `HomePage`, `LlegadaPage`, `SeguimientoPage`, `CapturaPage`, `LoginPage`, `SinAccesoPage`, `SinConexionPage`, `SinPermisoPage`, `HerramientasDePrueba` y `PruebaCamara` (ocultas), `composicion.ts`. |
 | `core/auth/` | `AuthCookie` (login, refresh, logout), `canalSesion` (BroadcastChannel), `identidadToken`, `useSesion`. |
 | `core/http/` | `apiClient` (401 → renovar y reintentar una vez, política de 403, tiempo límite) y `ApiError`. |
 | `features/traslado/domain/` | `zonas`, `estadoFoto`, `estadoOrden`, `presentacionOrden`, `vin`, `confirmacion`, `tomas`, `elecciones`, `catalogo`, `mezclaCache`, `avance`, `formulario`, `orden`. |
 | `features/traslado/api/` | `trasladoApi` (órdenes, catálogos, VIN, tomar, soltar, confirmar), `storageApi` (URL firmada), `subidaGcs` (PUT), `schemas`. |
 | `features/traslado/data/` | `listaOrdenes`, `catalogoTraslado`, `identificadorVin`, `formularioCaptura`, `subidaFotos`, `confirmacionTraslado`, almacenes (`fotoStoreDexie`, `tomasStore`, `eleccionesStore`, `ordenesCache`, `catalogoCache`), `trasladoDb`. |
+| `features/llegada/domain/` | `llegada`: `cuerpoDeLlegada`, `interpretarRespuestaLlegada` (los resultados del servidor), `esFixUtil` (un fix de 20 s como máximo), `textoDeLlegada` (hora de Lima). |
+| `features/llegada/api/` | `llegadaApi`: `registrar` (`POST /mobile/llegadas`; lee el `code` y el `motivo` del 400 con `request`, no con `postJson`) y `OPCIONES_LLEGADA` (un 403 no cierra la sesión). |
+| `features/llegada/data/` | `controladorLlegada` (máquina de estados del recorrido, store externo), `ubicacion` (`crearUbicacionDelNavegador`, `watchPosition` con `maximumAge: 0`) y `testing/fakes`. |
+| `features/llegada/components/` | `EscanerQr` y `useLlegada`. |
 | `features/seguimiento/domain/` | `traslado` (tipos y pestañas), `presentacion` (`estadoGps`, `bloqueGps`, `hitosDe`, `formatoFecha`, `horaDeLima`, `filtrarTraslados`, `contarPorEtapa`, `esVisible`, `claveMarca`, `logoDeMarca`…) y `consulta` (`leerVines`, `resumirConsulta`, `ResultadoVin`). |
 | `features/seguimiento/api/` | `seguimientoApi` (`GET /api/seguimiento/traslados`, con su política de 403) y `schemas` (zod: deja pasar solo lo que la pantalla usa). |
 | `features/seguimiento/data/` | `listaSeguimiento` (store externo en memoria, una petición a la vez, vacía al cambiar de persona) y `testing/fakes`. |

@@ -1,12 +1,13 @@
 # Índice de la documentación
 
-Última actualización: 2026-10-13 | Fuente: docs/ | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: docs/ | Estado: vigente
 
 Punto de entrada del repositorio: [README.md](../README.md). Memoria para sesiones con LLM: [CLAUDE.md](../CLAUDE.md) y [AGENTS.md](../AGENTS.md).
 
 ## 01 · Visión y alcance
 - [vision-y-alcance.md](01-vision-y-alcance/vision-y-alcance.md): qué es, qué hace hoy y endpoints que usa.
 - [patron-traslado-web.md](01-vision-y-alcance/patron-traslado-web.md): contrato de datos y desenlaces (referencia, del 2026-10-09).
+- [marcacion-llegada-qr.md](01-vision-y-alcance/marcacion-llegada-qr.md): la marcación de llegada por QR del conductor (L-01): qué hace, el contrato y lo que no se probó.
 - [propuesta-vista-cliente.md](01-vision-y-alcance/propuesta-vista-cliente.md): propuesta (borrador) de una vista para que el cliente siga sus vehículos: PDI, en camino, GPS y ubicación.
 
 ## 02 · Arquitectura
@@ -41,7 +42,8 @@ Punto de entrada del repositorio: [README.md](../README.md). Memoria para sesion
 [0008 no tocar producción](06-decisiones/0008-no-tocar-produccion.md) ·
 [0009 Vercel contra producción](06-decisiones/0009-vercel-contra-produccion-solo-para-ver.md) ·
 [0010 galería y escáner](06-decisiones/0010-galeria-y-escaner-con-jpeg-verificado.md) ·
-[0011 vista del coordinador](06-decisiones/0011-vista-del-coordinador-por-rol-solo-lectura-y-en-memoria.md)
+[0011 vista del coordinador](06-decisiones/0011-vista-del-coordinador-por-rol-solo-lectura-y-en-memoria.md) ·
+[0012 llegada por QR](06-decisiones/0012-marcacion-de-llegada-por-qr-solo-lado-conductor-y-solo-con-internet.md)
 
 ## 07 · Planificación
 - [estado-actual.md](07-planificacion/estado-actual.md): resumen y fuente de cada cosa.

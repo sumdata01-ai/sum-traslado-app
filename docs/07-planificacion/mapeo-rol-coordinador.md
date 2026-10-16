@@ -1,6 +1,6 @@
 # Mapeo: el rol `coordinador` y su acceso a la vista de seguimiento
 
-Última actualización: 2026-10-15 | Fuente: `sum-bck-modulos` (`app/services/auth_service.py`, `app/schemas/auth.py`, `app/schemas/usuarios.py`, `app/api/deps.py`, `app/api/mobile/traslado.py`, `app/api/v1/telemetria.py`, `app/api/v1/usuarios.py`, `app/api/v1/auth.py`, `app/api/v1/storage.py`, `migrations/020_traslado.sql`, `tests/test_rol_gerencia.py`), `sum-portal-front` (`src/lib/defaultRoute.ts`, `src/constants/users.ts`, `src/App.tsx`, `documents/migraciones/rol-gerencia-reportes-taller2.md`), `sum-app` (`lib/core/auth/auth_service.dart`), este repositorio (`src/app/`, `src/core/auth/`) | Estado: **la web está construida (2026-10-15) y probada con servidores falsos; el backend y el portal siguen pendientes**
+Última actualización: 2026-10-15 | Fuente: `sum-bck-modulos` (`app/services/auth_service.py`, `app/schemas/auth.py`, `app/schemas/usuarios.py`, `app/api/deps.py`, `app/api/mobile/traslado.py`, `app/api/v1/telemetria.py`, `app/api/v1/usuarios.py`, `app/api/v1/auth.py`, `app/api/v1/storage.py`, `migrations/020_traslado.sql`, `tests/test_rol_gerencia.py`), `sum-portal-front` (`src/lib/defaultRoute.ts`, `src/constants/users.ts`, `src/App.tsx`, `documents/migraciones/rol-gerencia-reportes-taller2.md`), `sum-app` (`lib/core/auth/auth_service.dart`), este repositorio (`src/app/`, `src/core/auth/`) | Estado: **la web y el backend están hechos (2026-10-15; backend: merge `65afcac`); el portal sigue pendiente** (su formulario de alta no ofrece `coordinador`)
 
 > **Convención:** *confirmado* = salió del código revisado. *Propuesta* = diseño que se recomienda. `> TODO(verificar)` = queda abierto. ⬜ = por hacer.
 > El backend se leyó en la copia local de `sum-bck-modulos` (rama `feature/utilitarios-asistencia-qr`, con cambios sin commitear en la parte de llegadas). **No se verificó que coincida con producción.**
@@ -88,11 +88,11 @@ flowchart TD
 
 ## 6. Cambios por repositorio
 
-### Backend (`sum-bck-modulos`), ⬜ necesita autorización y su propio equipo
-1. ⬜ `app/schemas/auth.py`: `"coordinador"` en `ROLES_VALIDOS`. Sin esto el alta devuelve 422 (por eso `cliente` quedó inalcanzable). **Es el único cambio de roles.** No hay valor por defecto de apps ni tabla nueva en esta versión.
-2. ⬜ Endpoints de solo lectura `GET /api/seguimiento/traslados` y `GET /api/seguimiento/traslados/{id_orden}`, con guard `require_role("coordinador")` y **sin filtro por destino**. Contrato en [propuesta-vista-cliente.md](../01-vision-y-alcance/propuesta-vista-cliente.md) §7. Deben leer la caché del barrido de GPS, no al proveedor.
-3. ⬜ El servidor traduce los estados internos (`sin_placa`, `sin_gps`, `demorado`) a `en_vivo`, `ultima_ubicacion` o `sin_seguimiento`, y a «se define al salir» cuando el vehículo aún no sale.
-4. ⬜ Pruebas, siguiendo a `tests/test_rol_gerencia.py`: el rol está en el catálogo; el alta lo acepta por los dos caminos; un rol inexistente se sigue rechazando; un coordinador **no** entra a `/mobile/traslado`, a telemetría ni a `proceso/guion`; los endpoints nuevos responden 403 a operario, supervisor y `cliente`, y devuelven todo a un coordinador.
+### Backend (`sum-bck-modulos`), ✅ hecho el 2026-10-15 (rama `feat/seguimiento-coordinador`, merge `65afcac`); falta el alta de cuentas en producción
+1. ✅ `app/schemas/auth.py`: `"coordinador"` en `ROLES_VALIDOS`. Sin esto el alta devuelve 422 (por eso `cliente` quedó inalcanzable). **Es el único cambio de roles.** No hay valor por defecto de apps ni tabla nueva en esta versión.
+2. ✅ (parcial: la lista `GET /api/seguimiento/traslados` y `POST /api/seguimiento/consulta-vines`; **no** se hizo `…/{id_orden}`: el detalle sale de la lista) Endpoints de solo lectura `GET /api/seguimiento/traslados` y `GET /api/seguimiento/traslados/{id_orden}`, con guard `require_role("coordinador")` y **sin filtro por destino**. Contrato en [propuesta-vista-cliente.md](../01-vision-y-alcance/propuesta-vista-cliente.md) §7. Deben leer la caché del barrido de GPS, no al proveedor.
+3. ✅ El servidor traduce los estados internos (`sin_placa`, `sin_gps`, `demorado`) a `en_vivo`, `ultima_ubicacion` o `sin_seguimiento`, y a «se define al salir» cuando el vehículo aún no sale.
+4. ✅ Pruebas, siguiendo a `tests/test_rol_gerencia.py`: el rol está en el catálogo; el alta lo acepta por los dos caminos; un rol inexistente se sigue rechazando; un coordinador **no** entra a `/mobile/traslado`, a telemetría ni a `proceso/guion`; los endpoints nuevos responden 403 a operario, supervisor y `cliente`, y devuelven todo a un coordinador.
 5. ⬜ Alta de cuentas: por ahora solo `admin`. La columna `allowed_apps` del coordinador no importa.
 
 ### Portal (`sum-portal-front`), ⬜ cambios mínimos de coherencia

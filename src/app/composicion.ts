@@ -7,6 +7,7 @@
  */
 import { AuthCookie, canalDelNavegador } from '@/core/auth'
 import { createApiClient } from '@/core/http'
+import { crearLlegadaApi } from '@/features/llegada/api/llegadaApi'
 import { crearSeguimientoApi } from '@/features/seguimiento/api/seguimientoApi'
 import { ListaSeguimiento } from '@/features/seguimiento/data/listaSeguimiento'
 import { crearStorageApi } from '@/features/traslado/api/storageApi'
@@ -58,6 +59,9 @@ export const identificador = new IdentificadorVin({ api: trasladoApi })
 
 /** Vista del coordinador: los traslados que genera Traslado, solo lectura y solo en memoria (sin Dexie). */
 export const seguimiento = new ListaSeguimiento({ api: crearSeguimientoApi(api) })
+
+/** Marcación de llegada por QR (lado del conductor): solo con internet, no guarda nada en el teléfono. */
+export const llegada = { api: crearLlegadaApi(api) }
 
 /** E4-01: las fotos tomadas (en este teléfono) y su subida a GCS: cada una se sube al tomarla. */
 export const fotos = (() => {

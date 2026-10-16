@@ -411,6 +411,28 @@ Ver [pedido-backend-seguimiento-coordinador.md](pedido-backend-seguimiento-coord
 - **C-05** Filtro por destino y roles para externos (tabla usuario → destino); hoy el rol solo debe darse a personal de SUM.
 - Logos de marca (hoy una inicial neutra) cuando se confirmen las marcas y el permiso de uso.
 
+## E8 — Llegada por QR del conductor *(añadida el 2026-10-15, pedida por el usuario)*
+
+La app móvil ya tiene la marcación de llegada por QR, con su backend y el modo punto de la tablet en producción. Esta web trae **solo lo que hace el conductor**. Decisión y alcance: [ADR 0012](../06-decisiones/0012-marcacion-de-llegada-por-qr-solo-lado-conductor-y-solo-con-internet.md). Funcional: [marcacion-llegada-qr.md](../01-vision-y-alcance/marcacion-llegada-qr.md).
+
+### L-01 Marcar llegada por QR · Tamaño L · *Depende de A-02, O-05*
+**Estado (2026-10-15):** hecha en código y probada con servidores falsos (Vitest y Playwright en Chrome y Edge); **no se probó en un teléfono ni contra el backend real**.
+
+Como conductor, quiero escanear el QR de la tablet del punto y mandar mi ubicación, para registrar mi llegada y saber mi turno del día.
+
+- **AC1.** Given la home de Traslado con la marcación configurada, Then hay un botón «Marcar llegada»; al tocarlo se abre la pantalla y «Volver» regresa a la home. Sin la marcación configurada, el botón no se ofrece.
+- **AC2.** Given la pantalla, When se abre, Then explica para qué se usan la cámara y la ubicación y **no pide nada** hasta tocar «Permitir cámara y ubicación» (el navegador pregunta entonces).
+- **AC3.** Given un QR leído y una ubicación de **20 s como máximo**, Then se manda `POST /mobile/llegadas` con **exactamente cuatro campos** (`payload`, `latitud`, `longitud`, `precision_m`), ninguna fecha, y el texto del QR **tal cual** (sin recortar ni cambiar mayúsculas), con la sesión del conductor; y se muestra el punto, «Tu turno», la hora en hora de Lima y la zona horaria, **sin los flags**. Un 200 (ya registrada) se muestra igual.
+- **AC4.** Given un QR leído sin una ubicación reciente, Then se espera hasta **30 s** («Buscando tu ubicación…»); si no llega, «No se pudo leer tu ubicación.» con «Recalcular posición» (que espera una ubicación **nueva**, no reenvía la vieja) y «Escanear de nuevo». Nunca se usa la última posición conocida.
+- **AC5.** Given un envío, Then **solo cuenta el primer QR** y nunca hay dos peticiones a la vez; reintentar tras un fallo de red reenvía el mismo QR (el servidor lo trata como el mismo evento).
+- **AC6.** Given cada respuesta del servidor, Then se muestra: 400 `INVALID_CODE` «El código no es válido.» (escanear de nuevo); 400 fuera de zona «Aún no estás en la zona de llegada.» (reintentar con mi posición / escanear de nuevo); 400 precisión insuficiente: espera hasta 30 s un fix mejor y **reenvía sola**, diciendo la precisión que hay y la que se necesita; 422: se reintenta **una vez** con una posición nueva y, si vuelve a fallar, «No se pudo leer tu ubicación.»; 403 «No tienes permiso para marcar llegada.» **sin cerrar la sesión**; sin conexión «Sin conexión» con «Reintentar»; otro error «No se pudo registrar la llegada» con «Reintentar».
+- **AC7.** Given que el navegador niega la ubicación, Then hay una pantalla «Sin permiso de ubicación» que explica cómo permitirla en los ajustes del navegador y un «Reintentar». Given que niega la cámara, Then el visor lo explica con el mensaje de la cámara.
+- **AC8.** Given que se sale de la pantalla (o se confirma), Then la cámara queda apagada, el GPS suelto y los temporizadores cancelados; lo que conteste el servidor después no cambia nada. **No se guarda nada** en el navegador.
+- **AC9.** Given 360 px de ancho, Then no hay desborde horizontal; cada pantalla nueva lleva el foco a su título y no tiene fallos de accesibilidad (`axe`).
+- **Fuera de alcance:** el QR de la tablet (modo punto), la vista del supervisor (llegadas, flags, intentos, puntos) y la franja «Llegada registrada» del inicio (en la app es local por teléfono; no se pidió).
+- **Pruebas:** [U] dominio, API (cuerpo exacto, política de 403), controlador con temporizadores simulados y ubicación; [C] visor y pantalla con axe; [I] botón en la home y en `App`; [E] `e2e/llegada.spec.ts`.
+- **Pendiente:** probarla en iPhone y Android (en iPhone `watchPosition` puede no volver a emitir con el teléfono quieto); medir en el lugar las constantes (20 s, 30 s, radio y precisión del punto); probarla contra el backend real **solo con permiso** (cada llegada escribe un turno).
+
 ## E6 — Topología y despliegue (PENDIENTE)
 
 **Estado:** Pendiente. Fuera de la etapa de desarrollo actual.

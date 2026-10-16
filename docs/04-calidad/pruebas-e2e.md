@@ -21,6 +21,7 @@
 | `vin.spec.ts` | Búsqueda por VIN | Hace unos 10 logins en 40 s. |
 | `subida.spec.ts` | Subir una foto al bucket | **Apagada por defecto**: el backend local firma URLs del bucket de **producción**. Solo corre con `TRASLADO_BUCKET_DE_PRUEBA=si` y aun así aborta cualquier PUT a un bucket con «prod» en el nombre. |
 | `seguimiento.spec.ts` | Vista del coordinador: entrar por rol, tabla y detalle en escritorio, lista y detalle a 360 px sin desborde, recargar con la sesión viva | **No usa el backend**: `/api/*` y `/mobile/*` se responden en la propia prueba (el endpoint no existe todavía), así que no toca la base ni el bucket y no gasta logins. Falla ante cualquier error de JavaScript de la página. Solo intercepta rutas que **empiezan** por `/api/` o `/mobile/`: los módulos de código también tienen carpetas `api/`. Con `SEGUIMIENTO_CAPTURAS=<carpeta>` guarda capturas. |
+| `llegada.spec.ts` | «Marcar llegada»: el QR se lee de verdad (zxing) de una «cámara» que dibuja un QR, la ubicación la simula Playwright, el servidor es falso | **No usa el backend** ni registra llegadas. Comprueba el cuerpo exacto (cuatro campos, texto del QR tal cual, `Authorization`), el rechazo, el 403 sin cerrar la sesión y 360 px sin desborde. Lo único simulado de la cámara es `getUserMedia`. |
 | `soltarPropias.ts` | Utilidad de limpieza | Devuelve al pool las órdenes `pendiente` del usuario de prueba, en un `afterAll`. |
 
 ## Límites del backend

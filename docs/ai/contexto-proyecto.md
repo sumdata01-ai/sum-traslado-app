@@ -1,11 +1,13 @@
 # Contexto del proyecto (resumen denso)
 
-Última actualización: 2026-10-15 | Fuente: package.json, src/, docs/ | Estado: vigente
+Última actualización: 2026-10-15 | Fuente: package.json, src/, docs/, git (2026-10-15) | Estado: vigente
 
 ## Qué es
 Front web de **Traslado** de SUM Vehículos: el operario toma una orden, fotografía la **salida** (6 zonas) y la **entrega** (5 zonas) y confirma cada momento. Mismos endpoints `/mobile/*` que la app móvil (`sum-app`, Flutter) sobre el backend `sum-bck-modulos`. iPhone (Safari) y Android (Chrome). Sin PWA. **Solo con internet.**
 
-**Segunda audiencia (2026-10-15):** el rol **`coordinador`** ve, solo en esta web, el seguimiento de **todos** los traslados (`SeguimientoPage`, `features/seguimiento`): solo lectura, solo en memoria, sin mapa ni PDI, entra **por rol** y no por `allowed_apps`. El backend aún no tiene el rol ni el endpoint: ver [pedido-backend-seguimiento-coordinador.md](../07-planificacion/pedido-backend-seguimiento-coordinador.md).
+**Segunda audiencia (2026-10-15):** el rol **`coordinador`** ve, solo en esta web, el seguimiento de **todos** los traslados (`SeguimientoPage`, `features/seguimiento`): solo lectura, solo en memoria, **sin GPS, sin mapa, sin PDI y sin órdenes anuladas**, entra **por rol** y no por `allowed_apps`. Tiene una **consulta masiva de VIN** (pegar hasta 200; en tránsito o entregado, lo demás «pendiente de información») y la lista **no se renueva sola** (solo al abrir y con «Actualizar»). El backend ya tiene el rol y los endpoints (`sum-bck-modulos`, merge `65afcac`, en su `origin/main`): ver [pedido-backend-seguimiento-coordinador.md](../07-planificacion/pedido-backend-seguimiento-coordinador.md). La web está en `origin/main` (`29fcde0`); no se comprobó que Cloud Run ni Vercel ya lo tengan desplegado.
+
+**Tercera funcionalidad (2026-10-15):** la **marcación de llegada por QR** del conductor (`features/llegada`, `LlegadaPage`, botón «Marcar llegada» en la home): escanea el QR de la tablet del punto y manda su ubicación a `POST /mobile/llegadas`; ve el punto, su turno y la hora de Lima. Solo el lado del conductor (el backend y la tablet ya existen en la app `sum-app`), solo con internet y sin guardar nada. **No se probó en un teléfono ni contra el backend real.** Ver [marcacion-llegada-qr.md](../01-vision-y-alcance/marcacion-llegada-qr.md).
 
 ## Stack
 Vite 8 · React 19 · TypeScript ~6 estricto · Tailwind 4 · Dexie 4 (IndexedDB) · zod 4 · `@zxing/browser` (carga bajo demanda) · Vitest 4 + Testing Library + vitest-axe + fake-indexeddb · Playwright (Chrome y Edge instalados) · Vercel.
