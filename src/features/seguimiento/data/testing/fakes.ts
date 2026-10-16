@@ -1,5 +1,5 @@
 import type { ResultadosVinesLeidos, SeguimientoApi, TrasladosLeidos } from '../../api/seguimientoApi'
-import type { ResultadoVin, TrasladoSeguimiento } from '../../domain'
+import type { RangoFechas, ResultadoVin, TrasladoSeguimiento } from '../../domain'
 import { ListaSeguimiento } from '../listaSeguimiento'
 
 /** Un traslado de ejemplo (datos inventados, ningún VIN real). */
@@ -34,6 +34,8 @@ export function crearSeguimientoApiDePrueba(inicial: readonly TrasladoSeguimient
     traslados: readonly TrasladoSeguimiento[]
     descartados: number
     llamadas: number
+    /** El rango que pidió cada llamada a `traslados` (`undefined` si no pidió ninguno), en orden. */
+    rangos: Array<RangoFechas | undefined>
     /** Si se pone, la próxima llamada falla con esto (y se limpia). */
     fallo: unknown
     /** Si se pone, la respuesta espera a que se resuelva. */
@@ -46,11 +48,12 @@ export function crearSeguimientoApiDePrueba(inicial: readonly TrasladoSeguimient
     puertaConsulta: Promise<void> | null
     /** Si se pone, la consulta masiva responde esto en vez de cruzar con `traslados`. */
     respuestaConsulta: ResultadosVinesLeidos | null
-  } = { traslados: inicial, descartados: 0, llamadas: 0, fallo: null, puerta: null, consultas: [], falloConsulta: null, puertaConsulta: null, respuestaConsulta: null }
+  } = { traslados: inicial, descartados: 0, llamadas: 0, rangos: [], fallo: null, puerta: null, consultas: [], falloConsulta: null, puertaConsulta: null, respuestaConsulta: null }
 
   const api: SeguimientoApi = {
-    async traslados(): Promise<TrasladosLeidos> {
+    async traslados(rango?: RangoFechas): Promise<TrasladosLeidos> {
       estado.llamadas++
+      estado.rangos.push(rango)
       if (estado.puerta) await estado.puerta
       if (estado.fallo) {
         const fallo = estado.fallo

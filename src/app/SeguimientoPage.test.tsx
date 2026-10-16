@@ -56,6 +56,9 @@ const abrir = async (m: Montaje, fin: string) => userEvent.click(verDetalle(m, f
 /** Cualquier mención de GPS: ubicación, en vivo, dispositivo, seguimiento satelital, «lleva/llevó GPS». */
 const SIN_GPS = /gps|satelital|ubicaci[oó]n|en vivo|dispositivo|seguimiento por definir|se define al salir/i
 
+// Lo que dice la lista cuando el día elegido (hoy, con el reloj de estas pruebas) no tiene traslados en camino ni entregados.
+const VACIO_HOY = 'No hay traslados en camino ni entregados en esta fecha: Hoy.'
+
 // El orden de la lista de ejemplo: en camino (lo más reciente arriba), en planta y entregados. La orden anulada (X00064) no se muestra.
 const ORDEN_DE_EJEMPLO = ['X00602', 'X00231', 'X00487', 'X00519', 'X00655', 'X00097']
 
@@ -69,7 +72,7 @@ describe('la pantalla', () => {
     expect(screen.getByText('COORDINADOR PRUEBA')).toBeInTheDocument()
   })
 
-  it('mientras llega la primera lista dice que carga, y no ofrece filtros', async () => {
+  it('mientras llega la primera lista dice que carga, sin pestañas ni lista, pero ya con el filtro por fecha', async () => {
     const m = crearListaSeguimientoDePrueba()
     let abrirPuerta: () => void = () => undefined
     m.estado.puerta = new Promise<void>((r) => (abrirPuerta = r))
@@ -77,6 +80,7 @@ describe('la pantalla', () => {
 
     expect(screen.getByText('Cargando los traslados…')).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Filtrar por etapa' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Fecha: Hoy/ })).toBeInTheDocument()
 
     abrirPuerta()
     expect(await screen.findByRole('region', { name: 'Tabla de vehículos' })).toBeInTheDocument()
@@ -96,7 +100,7 @@ describe('la pantalla', () => {
   it('sin traslados lo dice, en vez de dejar una tabla vacía', async () => {
     const m = crearListaSeguimientoDePrueba([])
     render(<SeguimientoPage sesion={SESION} lista={m.lista} onCerrarSesion={() => undefined} />)
-    expect(await screen.findByText('Todavía no hay traslados para mostrar.')).toBeInTheDocument()
+    expect(await screen.findByText(VACIO_HOY)).toBeInTheDocument()
   })
 
   it('«Cerrar sesión» avisa a quien lo pidió', async () => {
@@ -162,7 +166,8 @@ describe('la tabla', () => {
       trasladoDePrueba({ idOrden: 1, vin: 'TESTVIN0000X00001', marca: 'JETOUR', modelo: 'X50', salidaRegistrada: '2026-10-15T13:00:00Z' }),
       trasladoDePrueba({ idOrden: 2, vin: 'TESTVIN0000X00002', marca: 'VW PASAJEROS', modelo: 'Nivus', salidaRegistrada: '2026-10-15T12:00:00Z' }),
       trasladoDePrueba({ idOrden: 3, vin: 'TESTVIN0000X00003', marca: 'VWPASAJEROS', modelo: 'Taos', salidaRegistrada: '2026-10-15T11:00:00Z' }),
-      trasladoDePrueba({ idOrden: 4, vin: 'TESTVIN0000X00004', marca: 'KYC', modelo: 'Kaiyi X3', salidaRegistrada: '2026-10-15T10:00:00Z' }),
+      trasladoDePrueba({ idOrden: 4, vin: 'TESTVIN0000X00004', marca: 'KYC', modelo: 'Mamut', salidaRegistrada: '2026-10-15T10:00:00Z' }),
+      trasladoDePrueba({ idOrden: 5, vin: 'TESTVIN0000X00005', marca: 'KAIYI', modelo: 'X3', salidaRegistrada: '2026-10-15T09:00:00Z' }),
     ])
     const logo = (fin: string) => cuerpoDe(m, fin).querySelector('img')?.getAttribute('src') ?? null
     expect(logo('X00001')).toMatch(/jetour/)
@@ -172,8 +177,9 @@ describe('la tabla', () => {
     const img = cuerpoDe(m, 'X00001').querySelector('img')!
     expect(img).toHaveAttribute('alt', '')
     expect(img.closest('[aria-hidden="true"]')).not.toBeNull()
-    expect(logo('X00004')).toBeNull() // sin logo: la inicial
-    expect(within(cuerpoDe(m, 'X00004')).getByText('K')).toBeInTheDocument()
+    expect(logo('X00004')).toMatch(/kyc/) // KYC tiene su logo desde el 2026-10-16
+    expect(logo('X00005')).toBeNull() // Kaiyi sigue sin logo: la inicial
+    expect(within(cuerpoDe(m, 'X00005')).getByText('K')).toBeInTheDocument()
   })
 
   it('sin logo de la marca, muestra su inicial; el logo y la inicial no se leen en voz alta', async () => {
@@ -229,12 +235,12 @@ describe('pestañas', () => {
   it('si todo lo que hay está anulado, dice que no hay traslados (y no que cargan)', async () => {
     const m = crearListaSeguimientoDePrueba([trasladoDePrueba({ idOrden: 2, vin: 'TESTVIN0000X00002', etapa: 'anulado', salidaRegistrada: null })])
     render(<SeguimientoPage sesion={SESION} lista={m.lista} onCerrarSesion={() => undefined} />)
-    expect(await screen.findByText('Todavía no hay traslados para mostrar.')).toBeInTheDocument()
+    expect(await screen.findByText(VACIO_HOY)).toBeInTheDocument()
     expect(screen.queryByText('Cargando los traslados…')).not.toBeInTheDocument()
 
     // Con un filtro puesto tampoco finge que hubo coincidencias: para el coordinador no hay ningún traslado.
     await userEvent.type(screen.getByRole('searchbox', { name: 'Buscar vehículo' }), 'x')
-    expect(screen.getByText('Todavía no hay traslados para mostrar.')).toBeInTheDocument()
+    expect(screen.getByText(VACIO_HOY)).toBeInTheDocument()
   })
 
   it('«En camino» muestra solo los que van en camino', async () => {

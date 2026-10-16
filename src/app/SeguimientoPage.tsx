@@ -4,13 +4,25 @@ import type { Sesion } from '@/core/auth'
 import { Banner, Button, cx } from '@/core/ui'
 import { ConsultaMasiva } from '@/features/seguimiento/components/ConsultaMasiva'
 import { DetalleTraslado } from '@/features/seguimiento/components/DetalleTraslado'
+import { EsqueletoTraslados } from '@/features/seguimiento/components/EsqueletoTraslados'
+import { FiltroFecha } from '@/features/seguimiento/components/FiltroFecha'
 import { IconoActualizar, IconoBuscar, IconoFiltro, IconoFlecha } from '@/features/seguimiento/components/iconos'
 import { ListaMovil, TablaTraslados } from '@/features/seguimiento/components/ListasDeTraslados'
 import { PanelDetalle } from '@/features/seguimiento/components/PanelDetalle'
 import { useConsultaVines } from '@/features/seguimiento/components/useConsultaVines'
 import { useAhora, useListaSeguimiento } from '@/features/seguimiento/components/useListaSeguimiento'
 import type { ListaSeguimiento } from '@/features/seguimiento/data/listaSeguimiento'
-import { FILTROS_ETAPA, type FiltroEtapa, contarPorEtapa, destinosDe, esVisible, filtrarTraslados, horaDeLima } from '@/features/seguimiento/domain'
+import {
+  FILTROS_ETAPA,
+  type FiltroEtapa,
+  contarPorEtapa,
+  destinosDe,
+  diaDeLima,
+  esVisible,
+  etiquetaDeRango,
+  filtrarTraslados,
+  horaDeLima,
+} from '@/features/seguimiento/domain'
 import { SinPermisoPage } from './SinPermisoPage'
 
 export interface SeguimientoPageProps {
@@ -30,6 +42,9 @@ const CONTENEDOR = 'mx-auto w-full max-w-[1480px] px-4 md:px-8'
  * nada de GPS** (ni ubicación ni si lleva dispositivo). Solo lectura y sin filtro por destino (primera versión, decisión del 2026-10-15). Una tabla (lista en el
  * teléfono) a todo lo ancho; «Ver detalle» abre el detalle en un panel por encima (a pantalla completa en el teléfono), para que
  * se vea sin importar cuánto se haya bajado. Sin mapa y sin datos que la primera versión no muestra (PDI, órdenes anuladas).
+ *
+ * **Filtro por fecha** (2026-10-16): al abrir muestra lo de **hoy** (día de Lima), en camino y entregado; «Fecha» pide otro
+ * rango al servidor al pulsar «Aplicar». Un traslado cuenta para un día si ese día se registró su salida o su entrega.
  *
  * Además tiene la **consulta masiva de VIN**: se pega una lista y se ve el estado de cada uno, de cualquier fecha (solo en
  * tránsito o entregado; lo demás es «pendiente de información»). Es otra vista de la misma pantalla.
@@ -69,6 +84,8 @@ export function SeguimientoPage({ sesion, lista, onCerrarSesion }: SeguimientoPa
   const hayTraslados = traslados.length > 0
   const primeraCarga = instantanea.cargando && instantanea.traslados.length === 0
   const hayFiltro = etapa !== 'todos' || texto.trim() !== '' || destino !== 'todos'
+  // «Hoy» sigue al reloj (se renueva cada 30 s): pasada la medianoche de Lima, lo que se mira pasa a rotularse «Ayer».
+  const hoy = diaDeLima(ahora)
   // El detalle de un vehículo que el servidor ya no manda no se sigue mostrando (ni se muestra otro en su lugar).
   const trasladosConsultados = (consulta.estado.resultados ?? []).flatMap((r) => (r.informacion === 'disponible' ? [r.traslado] : []))
   const detalle = abierto ? ((abierto.origen === 'lista' ? traslados : trasladosConsultados).find((t) => t.idOrden === abierto.idOrden) ?? null) : null
@@ -161,11 +178,7 @@ export function SeguimientoPage({ sesion, lista, onCerrarSesion }: SeguimientoPa
           )}
         </div>
 
-        {enConsulta ? null : primeraCarga ? (
-          <p role="status" className="mt-6 text-ink-2">
-            Cargando los traslados…
-          </p>
-        ) : (
+        {enConsulta ? null : (
           <>
             <div className="mt-5 flex flex-col gap-2.5 md:flex-row md:gap-4">
               <label className={cx(CAMPO, 'md:flex-1')}>
@@ -183,6 +196,11 @@ export function SeguimientoPage({ sesion, lista, onCerrarSesion }: SeguimientoPa
                   className="min-w-0 flex-1 bg-transparent text-base text-ink-1 outline-none placeholder:text-ink-3"
                 />
               </label>
+              {/* El selector de destino solo existe cuando ya llegaron los traslados: mientras tanto se reserva su lugar, para que al
+                  llegar la lista nada se mueva (en el teléfono empujaría todo hacia abajo y en escritorio estrecharía el buscador). */}
+              {primeraCarga && (
+                <div aria-hidden="true" className="min-h-11 animate-pulse rounded-control bg-line motion-reduce:animate-none md:w-[360px]" />
+              )}
               {destinos.length > 1 && (
                 <label className={cx(CAMPO, 'relative md:w-[360px]')}>
                   <span className="sr-only">Destino</span>
@@ -202,33 +220,42 @@ export function SeguimientoPage({ sesion, lista, onCerrarSesion }: SeguimientoPa
                   <IconoFlecha className="pointer-events-none absolute right-3 size-4" />
                 </label>
               )}
+              <FiltroFecha rango={instantanea.rango} hoy={hoy} onAplicar={(rango) => lista.aplicarRango(rango)} />
             </div>
 
-            <div role="group" aria-label="Filtrar por etapa" className="-mx-1 mt-5 flex gap-1 overflow-x-auto border-b border-line px-1">
-              {FILTROS_ETAPA.map((filtro) => (
-                <button
-                  key={filtro.valor}
-                  type="button"
-                  aria-pressed={etapa === filtro.valor}
-                  onClick={() => setEtapa(filtro.valor)}
-                  className={cx(
-                    '-mb-px min-h-11 border-b-2 px-3 text-[15px] md:px-4 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
-                    etapa === filtro.valor ? 'border-primary font-bold text-primary' : 'border-transparent text-ink-2',
-                  )}
-                >
-                  {filtro.etiqueta} ({conteo[filtro.valor]})
-                </button>
-              ))}
-            </div>
-
-            {visibles.length === 0 ? (
-              <p className="py-8 text-center text-ink-3">
-                {hayTraslados && hayFiltro ? 'Ningún vehículo coincide con lo que buscas.' : 'Todavía no hay traslados para mostrar.'}
-              </p>
+            {primeraCarga ? (
+              <EsqueletoTraslados mensaje="Cargando los traslados…" conPestanas />
             ) : (
               <>
-                <TablaTraslados traslados={visibles} ahora={ahoraComoFecha} onAbrir={abrir} />
-                <ListaMovil traslados={visibles} ahora={ahoraComoFecha} onAbrir={abrir} />
+                <div role="group" aria-label="Filtrar por etapa" className="-mx-1 mt-5 flex gap-1 overflow-x-auto border-b border-line px-1">
+                  {FILTROS_ETAPA.map((filtro) => (
+                    <button
+                      key={filtro.valor}
+                      type="button"
+                      aria-pressed={etapa === filtro.valor}
+                      onClick={() => setEtapa(filtro.valor)}
+                      className={cx(
+                        '-mb-px min-h-11 border-b-2 px-3 text-[15px] md:px-4 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
+                        etapa === filtro.valor ? 'border-primary font-bold text-primary' : 'border-transparent text-ink-2',
+                      )}
+                    >
+                      {filtro.etiqueta} ({conteo[filtro.valor]})
+                    </button>
+                  ))}
+                </div>
+
+                {visibles.length === 0 ? (
+                  <p className="py-8 text-center text-ink-3">
+                    {hayTraslados && hayFiltro
+                      ? 'Ningún vehículo coincide con lo que buscas.'
+                      : `No hay traslados en camino ni entregados en esta fecha: ${etiquetaDeRango(instantanea.rango, hoy)}.`}
+                  </p>
+                ) : (
+                  <>
+                    <TablaTraslados traslados={visibles} ahora={ahoraComoFecha} onAbrir={abrir} />
+                    <ListaMovil traslados={visibles} ahora={ahoraComoFecha} onAbrir={abrir} />
+                  </>
+                )}
               </>
             )}
           </>

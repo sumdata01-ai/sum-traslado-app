@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Banner, Button } from '@/core/ui'
 import { MAX_VINES_CONSULTA, NOTA_PENDIENTE, type ResultadoVin, TEXTO_PENDIENTE, leerVines, resumirConsulta } from '../domain'
+import { EsqueletoTraslados } from './EsqueletoTraslados'
 import { ListaMovil, TablaTraslados, type ListaProps } from './ListasDeTraslados'
 import type { EstadoConsulta } from './useConsultaVines'
 
@@ -99,6 +100,13 @@ export function ConsultaMasiva({ texto, onTexto, estado, onConsultar, onLimpiar,
           Limpiar
         </Button>
       </div>
+
+      {/* Mientras llega el primer resultado se dibuja el esqueleto; si ya hay un resultado anterior, se conserva hasta que llegue el nuevo. */}
+      {estado.consultando && estado.resultados === null && (
+        <div className="mt-8">
+          <EsqueletoTraslados mensaje="Consultando los VIN…" filas={3} />
+        </div>
+      )}
 
       {estado.resultados !== null && (
         <div className="mt-8">
