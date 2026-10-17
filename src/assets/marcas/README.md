@@ -1,6 +1,6 @@
 # Logos de marca
 
-Última actualización: 2026-10-16 | Fuente: `src/features/seguimiento/components/piezas.tsx`, `src/features/seguimiento/domain/presentacion.ts` (`claveMarca`), marcas con órdenes en la base de pruebas local, kyc.com.ar | Estado: vigente
+Última actualización: 2026-10-17 | Fuente: `src/features/seguimiento/components/piezas.tsx`, `src/features/seguimiento/domain/presentacion.ts` (`claveMarca`), marcas con órdenes en la base de pruebas local, kyc.com.ar | Estado: vigente
 
 Logos de las marcas que se muestran en la vista de seguimiento del coordinador. Sin archivo para una marca, la vista muestra un círculo con su inicial.
 
@@ -14,7 +14,7 @@ Logos de las marcas que se muestran en la vista de seguimiento del coordinador. 
 | `cupra.png` | `CUPRA` |
 | `porsche.png` | `PORSCHE` |
 | `seat.png` | `SEAT` |
-| `soueast.png` | `SOUEAST` |
+| `soueast.svg` | `SOUEAST` |
 | `kyc.svg` | `KYC` |
 
 **Sin logo todavía** (se ve la inicial): el resto del catálogo (`KAIYI`, `KARRY`, `FAW`, `DONGFENG`, `KIA`, `MAZDA`…). `KYC` era la 3.ª marca con más órdenes en la base de pruebas.
@@ -25,7 +25,9 @@ Logos de las marcas que se muestran en la vista de seguimiento del coordinador. 
 
 **`kyc.svg`** (2026-10-16): descargado del encabezado del sitio de la marca en Argentina, `kyc.com.ar/wp-content/uploads/2025/05/Capa_1.svg`, sin cambios (SVG de 18 KB, emblema rojo y letras «KYC», sin la marca de ningún distribuidor, sin scripts ni enlaces externos; se revisó antes de copiarlo). Es la versión en color para fondo claro; la del pie del sitio es blanca (para fondo oscuro) y no se usa. Es un logo de una marca registrada de un tercero: aplica la misma condición de uso que los demás (ver abajo).
 
-Los siete de arriba, en `.png`, salen del repositorio público [car-logos-dataset](https://github.com/filippofilip95/car-logos-dataset) (carpeta `logos/optimized`), publicado con licencia MIT. **Esa licencia cubre el código del repositorio, no las marcas**: los logos son propiedad de sus fabricantes. Se descargaron el 2026-10-15, se recortó el espacio vacío y se redujeron de tamaño (el de SEAT original pesaba 600 KB).
+**`soueast.svg`** (2026-10-17, a pedido del usuario: solo las letras, sin el emblema rojo, como el de Jetour): descargado del sitio web de la marca (`sewebsb.nyc3.cdn.digitaloceanspaces.com/website-settings/01K7MSEF2CW83CP1JT7AQX3VE2.svg`; SVG de 2,8 KB, 124 × 10, sin scripts, enlaces ni imágenes; se revisó antes de copiarlo). **El original es gris claro (`#DCDDDD`), para fondo oscuro, y no se lee sobre blanco**: se cambió **solo el color de relleno a negro (`#000000`, el mismo de Jetour)**; las formas no se tocaron. Es una variante de color hecha aquí, no la oficial: aplica la condición de uso de abajo, y si SUM prefiere el archivo oficial para fondo claro, se reemplaza con el mismo nombre. Por ser muy alargado (12 a 1), en la caja de la lista (80 × 40 px) las letras salen de unos 6 px de alto, más chicas que las de Jetour. Reemplaza al `soueast.png` (emblema rojo con letras), que se quitó.
+
+Los seis `.png` restantes (todos menos `kyc.svg` y `soueast.svg`) salen del repositorio público [car-logos-dataset](https://github.com/filippofilip95/car-logos-dataset) (carpeta `logos/optimized`), publicado con licencia MIT. **Esa licencia cubre el código del repositorio, no las marcas**: los logos son propiedad de sus fabricantes. Se descargaron el 2026-10-15, se recortó el espacio vacío y se redujeron de tamaño (el de SEAT original pesaba 600 KB).
 
 > TODO(verificar): que SUM pueda mostrar estas marcas en una pantalla para terceros. Para uso interno de SUM, que importa y distribuye estas marcas, lo normal es poder hacerlo, pero la decisión y las guías de cada marca (proporciones, sin filtros ni deformaciones) son de SUM, no de este repositorio. Si se prefiere, se sustituyen por los logos de la biblioteca de marca de SUM con el mismo nombre de archivo.
 
